@@ -110,7 +110,7 @@ public class Broker implements Runnable{
 				for(Broker br : Node.getBrokers()){
 					if(gethashnumber()!=br.gethashnumber()){
 						i++;
-						conOOS.writeObject("Keys responsible  broker: "+i+"\n");
+						conOOS.writeObject("Keys responsible  broker: " + i + "\n");
 						for(String keys: br.getKeys().keySet()) conOOS.writeObject(keys + "\n");
 					}
 				}
@@ -119,10 +119,10 @@ public class Broker implements Runnable{
 				message = (String) conOIS.readObject();
 				
 				while(message != null){
-					conOOS.writeObject("Bus from line "+message+"\n");
+					conOOS.writeObject("Bus from line " + message+"\n");
 					for(BusAndLocation dr:DataResponsible){
 						if(dr.GetBusLine().equals(message))
-						conOOS.writeObject("Bus: "+dr.GetBusLine()+" location"+dr.GetLongitude()+" "+dr.GetLatitude()+"\n");
+						conOOS.writeObject("Bus: " + dr.GetBusLine() + " location"+dr.GetLongitude() + " "+dr.GetLatitude() + "\n");
 					}
 					message = (String) conOIS.readObject();
 				}
