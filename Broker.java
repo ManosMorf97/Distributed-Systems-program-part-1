@@ -36,34 +36,22 @@ public class Broker implements Runnable{
 	public void sethashstring(String hashstring){
 		this.hashstring=hashstring;
 	}
-     public void WakeUp(){//UNDONE
-    	 int ammountofPubsThreads=100;//UNDONE
-    	 int ammountofCons=consumers.size();//UNDONE
-    	 Thread threadsPub[]=new Thread[ammountofPubsThreads];
+     public void WakeUp() throws InterruptedException {//UNDONE
+    	 int ammountofPubsThreads = 100;//UNDONE
+    	 int ammountofCons = consumers.size();//UNDONE
+         Thread[] threadsPub = new Thread[ammountofPubsThreads];
     	 for(int i=0; i<ammountofPubsThreads; i++){
     		threadsPub[i]= new Thread(new Broker());
     		threadsPub[i].start();
          }
-    	 for(int i=0; i<ammountofPubsThreads; i++)
-			try {
-				threadsPub[i].join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	 Thread threadsCon[]=new Thread[ammountofCons];
+    	 for(int i=0; i<ammountofPubsThreads; i++) threadsPub[i].join();
+         recieveorsend =! recieveorsend;
+         Thread[] threadsCon = new Thread[ammountofCons];
     	 for(int i=0; i<ammountofCons; i++){
-    		threadsCon[i]= new Thread(new Broker());
+    		threadsCon[i] = new Thread(new Broker());
     		threadsCon[i].start();
          }
-    	 recieveorsend=!recieveorsend;
-    	 for(int i=0; i<ammountofCons; i++)
- 			try {
- 				threadsCon[i].join();
- 			} catch (InterruptedException e) {
- 				// TODO Auto-generated catch block
- 				e.printStackTrace();
- 			}
+    	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
      }
      public void ChangePublisher(){//UNDONE
     	 registeredPublishersIterator.next();
