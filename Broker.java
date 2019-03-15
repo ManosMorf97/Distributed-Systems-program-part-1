@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-
+//lol
 public class Broker implements Runnable{
 	private int hashnumber;
 	private String hashstring;
