@@ -2,11 +2,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.util.function.Consumer;
+
 //lol
 public class Broker implements Runnable{
 	private int hashnumber;
@@ -158,25 +158,22 @@ public class Broker implements Runnable{
     	 return  DataFromPublisher;
      }
 	public String MD5(String md5) {
-		   try {
-		        java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-		        byte[] array = md.digest(md5.getBytes());
-		        StringBuffer sb = new StringBuffer();
-		        for (int i = 0; i < array.length; ++i) {
-		          sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
-		       }
-		        return sb.toString();
-		    } catch (java.security.NoSuchAlgorithmException e) {
-		    }
-		    return null;
-		}
+		try {
+			java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+			byte[] array = md.digest(md5.getBytes());
+			StringBuilder sb = new StringBuilder();
+			for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100).substring(1, 3));
+			return sb.toString();
+		} catch (java.security.NoSuchAlgorithmException ignored) {}
+		return null;
+	}
+
 	public void PutData(BusAndLocation Data){//UNDONE
 		String MD=MD5(Data.GetBusLine());
 		int mod=hashnumber;
-		if(mod%100<=hashnumber&&MD.equals(hashstring)){
-			DataResponsible.add(Data);
-		}
+		if(mod%100<=hashnumber&&MD.equals(hashstring)) DataResponsible.add(Data);
 	}
+
 	public BusAndLocation Suitmessage(String message){//UNDONE
 		BusAndLocation BAL= new BusAndLocation();
 		BAL.SetTopic(message.charAt(index));//SEE
