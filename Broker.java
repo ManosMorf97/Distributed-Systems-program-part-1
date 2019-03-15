@@ -36,7 +36,7 @@ public class Broker implements Runnable{
 	public void sethashstring(String hashstring){
 		this.hashstring=hashstring;
 	}
-     public void WakeUp() throws InterruptedException {//UNDONE
+	public void WakeUp() throws InterruptedException {//UNDONE
     	 int ammountofPubsThreads = 100;//UNDONE
     	 int ammountofCons = consumers.size();//UNDONE
          Thread[] threadsPub = new Thread[ammountofPubsThreads];
@@ -52,13 +52,13 @@ public class Broker implements Runnable{
     		threadsCon[i].start();
          }
     	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
-     }
-     public void ChangePublisher(){//UNDONE
+	}
+	public void ChangePublisher(){//UNDONE
     	 registeredPublishersIterator.next();
      }
-     public void ChangeConsumer(){//UNDONE
+    public void ChangeConsumer(){//UNDONE
     	 
-     }
+	}
 	@Override
 	public void run() {
 		//We will get the data and we 'll decide if we want
@@ -70,28 +70,23 @@ public class Broker implements Runnable{
 			ServerSocket pubServerSocket=new ServerSocket(port);//UNDONE
 			Socket pubSocket=pubServerSocket.accept();
 			ObjectInputStream pubOIS=new ObjectInputStream(pubSocket.getInputStream());
-			try {
-				
-				String message = (String) pubOIS.readObject();
-				while(message!=null){
-					BusAndLocation TransformedMessage=(Suitmessage(message));
-					DataFromPublisher.add(TransformedMessage);//Suitmessage UNDONE
-					PutData( TransformedMessage);
-					message = (String) pubOIS.readObject();
-					if(!Keys.contains(TransformedMessage.GetBusLine())) Keys.add(TransformedMessage.GetBusLine());
-				}
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+
+			String message = (String) pubOIS.readObject();
+			while(message!=null){
+				BusAndLocation TransformedMessage=(Suitmessage(message));
+				DataFromPublisher.add(TransformedMessage);//Suitmessage UNDONE
+				PutData( TransformedMessage);
+				message = (String) pubOIS.readObject();
+				if(!Keys.contains(TransformedMessage.GetBusLine())) Keys.add(TransformedMessage.GetBusLine());
 			}
 			pubServerSocket.close();
 			}
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
+		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
-			 
-		}else{
+		}
+		else{
 			try {
 				ChangeConsumer();
 				ServerSocket conServerSocket=new ServerSocket(port);//UNDONE
@@ -99,7 +94,7 @@ public class Broker implements Runnable{
 				ObjectOutputStream conOOS=new ObjectOutputStream(conSocket.getOutputStream());
 				conOOS.writeObject("I am responsible for these keys:\n");
 				for(String keys :Keys)
-			   conOOS.writeObject(keys+"\n");
+			    conOOS.writeObject(keys+"\n");
 				//continue
 				//THE OTHER BROKERS RESPONSIBLE FOR?
 				int i=0;
@@ -114,13 +109,12 @@ public class Broker implements Runnable{
 				}
 				ObjectInputStream conOIS=new ObjectInputStream(conSocket.getInputStream());
 				String message;
-				try {
-					message = (String) conOIS.readObject();
+				message = (String) conOIS.readObject();
 				
-				while(message!=null){
+				while(message != null){
 					conOOS.writeObject("Bus from line "+message+"\n");
 					for(BusAndLocation dr:DataResponsible){
-						if(dr.GetBusLine()==message)
+						if(dr.GetBusLine().equals(message))
 						conOOS.writeObject("Bus: "+dr.GetBusLine()+" location"+dr.GetLongitude()+" "+dr.GetLatitude()+"\n");
 					}
 				}
@@ -128,15 +122,10 @@ public class Broker implements Runnable{
 				conServerSocket.close();
 				conOOS.close();
 				conOIS.close();
-				} catch (ClassNotFoundException e) {
+				} catch (ClassNotFoundException | IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}   
 		}
 	}   
 	
