@@ -43,14 +43,14 @@ public class Broker implements Runnable{
     	 int ammountofCons = consumers.size();//UNDONE
          Thread[] threadsPub = new Thread[ammountofPubsThreads];
     	 for(int i=0; i<ammountofPubsThreads; i++){
-    		threadsPub[i]= new Thread(new Broker(consumers, registeredPublishers, hashnumber ,hashstring));
+    		threadsPub[i]= new Thread(this);
     		threadsPub[i].start();
          }
     	 for(int i=0; i<ammountofPubsThreads; i++) threadsPub[i].join();
          recieveorsend =! recieveorsend;
          Thread[] threadsCon = new Thread[ammountofCons];
     	 for(int i=0; i<ammountofCons; i++){
-    		threadsCon[i] = new Thread(new Broker(consumers, registeredPublishers, hashnumber ,hashstring));
+    		threadsCon[i] = new Thread(this);
     		threadsCon[i].start();
          }
     	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
