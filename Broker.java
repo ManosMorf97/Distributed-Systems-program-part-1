@@ -23,37 +23,34 @@ public class Broker implements Runnable{
 	private static int PublisherID = -1;//UNDONE
 	private static int ConsumerID = -1;//UNDONE
 
-	private Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers) {
+	private Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers,int hashnumber, String hashstring) {
 		this.consumers = consumers;
 		this.registeredPublishers = registeredPublishers;
+		this.hashnumber = hashnumber;
+		this.hashstring = hashstring;
 	}
 
 	private HashMap<String,BusAndLocation> getKeys(){
 		return Keys;
 	}
-	
-	public void sethashnumer(int hashnumber){
-		this.hashnumber=hashnumber;
-	}
+
 	private int gethashnumber(){
 		return hashnumber;
 	}
-	public void sethashstring(String hashstring){
-		this.hashstring=hashstring;
-	}
+
 	public void WakeUp() throws InterruptedException {//UNDONE
     	 int ammountofPubsThreads = 100;//UNDONE
     	 int ammountofCons = consumers.size();//UNDONE
          Thread[] threadsPub = new Thread[ammountofPubsThreads];
     	 for(int i=0; i<ammountofPubsThreads; i++){
-    		threadsPub[i]= new Thread(new Broker(consumers, registeredPublishers));
+    		threadsPub[i]= new Thread(new Broker(consumers, registeredPublishers, hashnumber ,hashstring));
     		threadsPub[i].start();
          }
     	 for(int i=0; i<ammountofPubsThreads; i++) threadsPub[i].join();
          recieveorsend =! recieveorsend;
          Thread[] threadsCon = new Thread[ammountofCons];
     	 for(int i=0; i<ammountofCons; i++){
-    		threadsCon[i] = new Thread(new Broker(consumers, registeredPublishers));
+    		threadsCon[i] = new Thread(new Broker(consumers, registeredPublishers, hashnumber ,hashstring));
     		threadsCon[i].start();
          }
     	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
@@ -91,7 +88,6 @@ public class Broker implements Runnable{
 			}
 			pubServerSocket.close();
 			}
-
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
