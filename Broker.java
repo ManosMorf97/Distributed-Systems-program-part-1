@@ -11,26 +11,30 @@ import java.util.function.Consumer;
 public class Broker implements Runnable{
 	private int hashnumber;
 	private String hashstring;
-	private boolean recieveorsend=false;
+	private boolean recieveorsend = false;
 	//we want the data from publisher
 	private static ArrayList<BusAndLocation> DataFromPublisher;
 	private static ArrayList<BusAndLocation> DataResponsible;
 	private ArrayList<Consumer> consumers;
 	private ArrayList<Publisher> registeredPublishers;
-	Iterator registeredPublishersIterator=registeredPublishers.iterator();
+	private Iterator registeredPublishersIterator = registeredPublishers.iterator();
 	private static ArrayList<String> Keys;
-	private static int PublisherID=-1;//UNDONE
-	private static int ConsumerID=-1;//UNDONE
-	private static int port=-1;//UNDONE
-	
-	public ArrayList<String> getKeys(){
+	private static int PublisherID = -1;//UNDONE
+	private static int ConsumerID = -1;//UNDONE
+
+	public Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers) {
+		this.consumers = consumers;
+		this.registeredPublishers = registeredPublishers;
+	}
+
+	private ArrayList<String> getKeys(){
 		return Keys;
 		}
 	
 	public void sethashnumer(int hashnumber){
 		this.hashnumber=hashnumber;
 	}
-	public int gethashnumber(){
+	private int gethashnumber(){
 		return hashnumber;
 	}
 	public void sethashstring(String hashstring){
@@ -41,27 +45,29 @@ public class Broker implements Runnable{
     	 int ammountofCons = consumers.size();//UNDONE
          Thread[] threadsPub = new Thread[ammountofPubsThreads];
     	 for(int i=0; i<ammountofPubsThreads; i++){
-    		threadsPub[i]= new Thread(new Broker());
+    		threadsPub[i]= new Thread(new Broker(consumers, registeredPublishers));
     		threadsPub[i].start();
          }
     	 for(int i=0; i<ammountofPubsThreads; i++) threadsPub[i].join();
          recieveorsend =! recieveorsend;
          Thread[] threadsCon = new Thread[ammountofCons];
     	 for(int i=0; i<ammountofCons; i++){
-    		threadsCon[i] = new Thread(new Broker());
+    		threadsCon[i] = new Thread(new Broker(consumers, registeredPublishers));
     		threadsCon[i].start();
          }
     	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
 	}
-	public void ChangePublisher(){//UNDONE
+	private void ChangePublisher(){//UNDONE
     	 registeredPublishersIterator.next();
      }
-    public void ChangeConsumer(){//UNDONE
+    private void ChangeConsumer(){//UNDONE
     	 
 	}
 	@Override
 	public void run() {
 		//We will get the data and we 'll decide if we want
+		//UNDONE
+		int port = -1;
 		if(!recieveorsend)
 		try {
 			while(true){
@@ -117,6 +123,7 @@ public class Broker implements Runnable{
 						if(dr.GetBusLine().equals(message))
 						conOOS.writeObject("Bus: "+dr.GetBusLine()+" location"+dr.GetLongitude()+" "+dr.GetLatitude()+"\n");
 					}
+					message = (String) conOIS.readObject();
 				}
 				conOOS.writeObject("That's all for now\n");
 				conServerSocket.close();
@@ -134,7 +141,7 @@ public class Broker implements Runnable{
      public static ArrayList<BusAndLocation> GetDataFromPublisher(){
     	 return  DataFromPublisher;
      }
-	public String MD5(String md5) {
+	private String MD5(String md5) {
 		try {
 			java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
 			byte[] array = md.digest(md5.getBytes());
@@ -145,13 +152,13 @@ public class Broker implements Runnable{
 		return null;
 	}
 
-	public void PutData(BusAndLocation Data){//UNDONE
+	private void PutData(BusAndLocation Data){//UNDONE
 		String MD=MD5(Data.GetBusLine());
 		int mod=hashnumber;
-		if(mod%100<=hashnumber&&MD.equals(hashstring)) DataResponsible.add(Data);
+		if (MD != null && mod % 100 <= hashnumber && MD.equals(hashstring)) DataResponsible.add(Data);
 	}
 
-	public BusAndLocation Suitmessage(String message){//UNDONE
+	private BusAndLocation Suitmessage(String message){//UNDONE
 		BusAndLocation BAL= new BusAndLocation();
 		BAL.SetTopic(message.charAt(index));//SEE
 		BAL.SetValue(Integer.parseInt(message.charAt(index)));
