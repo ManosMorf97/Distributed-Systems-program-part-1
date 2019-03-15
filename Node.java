@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
-public class Node{
+class Node{
 	private static ArrayList<Broker> brokers;
-	public static ArrayList<Broker> getBrokers(){
+	static ArrayList<Broker> getBrokers(){
 		return brokers;
 	}
 }

@@ -1,6 +1,7 @@
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,7 +19,7 @@ public class Broker implements Runnable{
 	private ArrayList<Consumer> consumers;
 	private ArrayList<Publisher> registeredPublishers;
 	private Iterator registeredPublishersIterator = null;
-	private static ArrayList<String> Keys;
+	private static HashMap<String, BusAndLocation> Keys;
 	private static int PublisherID = -1;//UNDONE
 	private static int ConsumerID = -1;//UNDONE
 
@@ -27,7 +28,7 @@ public class Broker implements Runnable{
 		this.registeredPublishers = registeredPublishers;
 	}
 
-	private ArrayList<String> getKeys(){
+	private HashMap<String,BusAndLocation> getKeys(){
 		return Keys;
 	}
 	
@@ -64,6 +65,7 @@ public class Broker implements Runnable{
     private void ChangeConsumer(){//UNDONE
     	 
 	}
+
 	@Override
 	public void run() {
 		//We will get the data and we 'll decide if we want
@@ -85,7 +87,7 @@ public class Broker implements Runnable{
 				DataFromPublisher.add(TransformedMessage);//Suitmessage UNDONE
 				PutData( TransformedMessage);
 				message = (String) pubOIS.readObject();
-				if(!Keys.contains(TransformedMessage.GetBusLine())) Keys.add(TransformedMessage.GetBusLine());
+				if(!Keys.containsKey(TransformedMessage.GetBusLine())) Keys.put(TransformedMessage.GetBusLine(),TransformedMessage);
 			}
 			pubServerSocket.close();
 			}
@@ -100,18 +102,16 @@ public class Broker implements Runnable{
 				Socket conSocket=conServerSocket.accept();
 				ObjectOutputStream conOOS=new ObjectOutputStream(conSocket.getOutputStream());
 				conOOS.writeObject("I am responsible for these keys:\n");
-				for(String keys :Keys)
+				for(String keys :Keys.keySet())
 			    conOOS.writeObject(keys+"\n");
 				//continue
 				//THE OTHER BROKERS RESPONSIBLE FOR?
 				int i=0;
 				for(Broker br : Node.getBrokers()){
 					if(gethashnumber()!=br.gethashnumber()){
-					 i++;
-					 conOOS.writeObject("Keys responsible  broker: "+i+"\n");
-					 for(String keys:br.getKeys()){
-						conOOS.writeObject(keys+"\n");
-					 }
+						i++;
+						conOOS.writeObject("Keys responsible  broker: "+i+"\n");
+						for(String keys: br.getKeys().keySet()) conOOS.writeObject(keys + "\n");
 					}
 				}
 				ObjectInputStream conOIS=new ObjectInputStream(conSocket.getInputStream());
@@ -135,9 +135,7 @@ public class Broker implements Runnable{
 				}
 		}
 	}   
-	
-	
-	
+
 	public static ArrayList<BusAndLocation> GetDataFromPublisher(){
     	 return  DataFromPublisher;
 	}
@@ -154,13 +152,13 @@ public class Broker implements Runnable{
 	}
 
 	private void PutData(BusAndLocation Data){//UNDONE
-		String MD=MD5(Data.GetBusLine());
+		String MD = MD5(Data.GetBusLine());
 		int mod=hashnumber;
 		if (MD != null && mod % 100 <= hashnumber && MD.equals(hashstring)) DataResponsible.add(Data);
 	}
 
 	private BusAndLocation Suitmessage(String message){//UNDONE
-		BusAndLocation BAL= new BusAndLocation();
+		BusAndLocation BAL = new BusAndLocation();
 		BAL.SetTopic(message.charAt(index));//SEE
 		BAL.SetValue(Integer.parseInt(message.charAt(index)));
 		return BAL;

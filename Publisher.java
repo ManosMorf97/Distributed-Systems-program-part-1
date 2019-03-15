@@ -1,1 +1,8 @@
-public class Publisher{}
+class Publisher{
+
+
+
+
+
+
+}

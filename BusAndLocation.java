@@ -1,4 +1,4 @@
-public class BusAndLocation{
+class BusAndLocation{
 	private String busLine;
 	private String linenumber;
 	private String routeCode;
@@ -9,46 +9,46 @@ public class BusAndLocation{
 	
 	
 	
-	public void SetBusLine(String busLine){
+	void SetBusLine(String busLine){
 		this.busLine=busLine;
 	}
-	public String GetBusLine(){
+	String GetBusLine(){
 		return busLine;
 	}
-	public void SetLineNumber(String linenumber){
+	void SetLineNumber(String linenumber){
 		this.linenumber= linenumber;
 	}
-	public String GetLineNumber(){
+	String GetLineNumber(){
 		return linenumber;
 	}
-	public void SetRouteCode(String routeCode){
+	void SetRouteCode(String routeCode){
 		this.routeCode=routeCode;
 	}
-	public String GetRouteCode(){
+	String GetRouteCode(){
 		return routeCode;
 	}
-	public void SetVehicleId(String vehicleId){
+	void SetVehicleId(String vehicleId){
 		this.vehicleId=vehicleId;
 	}
-	public String GetVehicleId(){
+	String GetVehicleId(){
 		return vehicleId;
 	}
-	public void SetBusLineId(String buslineId){
+	void SetBusLineId(String buslineId){
 		this.buslineId=buslineId;
 	}
-	public String GetBusLineId(){
+	String GetBusLineId(){
 		return buslineId;
 	}
-	public void SetLatitude(double latitude){
+	void SetLatitude(double latitude){
 		this.latitude=latitude;
 	}
-	public double GetLatitude(){
+	double GetLatitude(){
 		return latitude;
 	}
-	public void SetLongitude(double longitude){
+	void SetLongitude(double longitude){
 		this.longitude=longitude;
 	}
-	public double GetLongitude(){
+	double GetLongitude(){
 		return longitude;
 	}
 }
