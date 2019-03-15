@@ -1,29 +1,40 @@
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.function.Consumer;
 
 //lol
 public class Broker implements Runnable{
+	private DataInputStream dis;
+	private DataOutputStream dos;
+	private Socket s;
 	private int hashnumber;
 	private String hashstring;
-	private boolean recieveorsend = false;
+	private static boolean recieveorsend = false;
 	//we want the data from publisher
 	private static ArrayList<BusAndLocation> DataFromPublisher;
 	private static ArrayList<BusAndLocation> DataResponsible;
-	private ArrayList<Consumer> consumers;
-	private ArrayList<Publisher> registeredPublishers;
+	private static ArrayList<Consumer> consumers;
+	private static ArrayList<Publisher> registeredPublishers;
 	private Iterator registeredPublishersIterator = null;
 	private static HashMap<String, BusAndLocation> Keys;
 	private static int PublisherID = -1;//UNDONE
 	private static int ConsumerID = -1;//UNDONE
+
+
+
+	private Broker(Socket s, DataInputStream dis, DataOutputStream dos) {
+		registeredPublishers = new ArrayList<>();
+		registeredPublishers.add(new Publisher());
+		consumers = new ArrayList<>();
+		consumers.add(new Consumer());
+		this.s = s;
+		this.dis = dis;
+		this.dos = dos;
+	}
 
 	private Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers,int hashnumber, String hashstring) {
 		this.consumers = consumers;
@@ -40,144 +51,120 @@ public class Broker implements Runnable{
 		return hashnumber;
 	}
 
-	public void WakeUp() throws InterruptedException {//UNDONE
-    	 int ammountofPubsThreads = 100;//UNDONE
-    	 int ammountofCons = consumers.size();//UNDONE
-         Thread[] threadsPub = new Thread[ammountofPubsThreads];
-    	 for(int i = 0; i<ammountofPubsThreads; i++){
-    		threadsPub[i]= new Thread(this);
-    		threadsPub[i].start();
-         }
-    	 for(int i = 0; i<ammountofPubsThreads; i++) threadsPub[i].join();
-         recieveorsend =! recieveorsend;
-         Thread[] threadsCon = new Thread[ammountofCons];
-    	 for(int i = 0; i<ammountofCons; i++){
-    		threadsCon[i] = new Thread(this);
-    		threadsCon[i].start();
-         }
-    	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
-	}
-	private void ChangePublisher(){//UNDONE
-    	if(registeredPublishersIterator == null) registeredPublishersIterator = registeredPublishers.iterator();
-		registeredPublishersIterator.next();
-	}
-    private void ChangeConsumer(){//UNDONE
-    	 
+	private void WakeUp() throws InterruptedException {//UNDONE
+
 	}
 
+	public static void main(String[] args) throws IOException {
 
-	private void startClient() {
-		Socket requestSocket = null; //arxikopoihsh
-		ObjectOutputStream out = null;
-		ObjectInputStream in = null;
-		String message;
-		try {
-			requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), 4321); //local address
+		// server is listening on port 5056
+		ServerSocket serverSocket = new ServerSocket(5056);
+		while (true)
+		{
+			Socket socket = null;
 
-			out= new ObjectOutputStream(requestSocket.getOutputStream());
-			in= new ObjectInputStream(requestSocket.getInputStream());
+			try
+			{
+				// socket object to receive incoming client requests
+				socket = serverSocket.accept();
 
-			try {
-				message = (String) in.readObject(); //to pairnie apo ton server
-				System.out.println("Server>"+message);
+				System.out.println("A new client is connected : " + socket);
 
-				out.writeObject("Hi");
-				out.flush();
+				// obtaining input and out streams
+				DataInputStream in = new DataInputStream(socket.getInputStream());
+				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-				out.writeObject("Just Testing.");
-				out.flush();
+				System.out.println("Assigning new thread for this client");
 
-				out.writeObject("bye");
-				out.flush();
+				// create a new thread object
+				Thread thread = new Thread(socket, in, out);
+
+				// Invoking the start() method
+				thread.start();
+
 			}
-			catch (ClassNotFoundException classNot){
-				System.err.println("data received in unknown format");
-			}
-
-		} catch (UnknownHostException unknownHost) {
-			System.err.println("You are trying to connect to an unknown host!");
-		} catch (IOException ioException) {
-			ioException.printStackTrace();
-		} finally {
-			try {
-				in.close();
-				out.close();
-				requestSocket.close();
-			} catch (IOException ioException) {
-				ioException.printStackTrace();
+			catch (Exception e){
+				socket.close();
+				e.printStackTrace();
 			}
 		}
 	}
 
 	@Override
 	public void run() {
-		this.startClient();
+		this.startBroker();
 		//We will get the data and we 'll decide if we want
 		//UNDONE
-		int port = 22000;
-		if(!recieveorsend)
-		try {
-			while(true){
-			ChangePublisher();
-			if(!registeredPublishersIterator.hasNext()) break;
-			ServerSocket pubServerSocket = new ServerSocket(port);//UNDONE
-			Socket pubSocket=pubServerSocket.accept();
-			ObjectInputStream pubOIS = new ObjectInputStream(pubSocket.getInputStream());
+	}
+
+	private void startBroker() {
+		Socket requestSocket; //arxikopoihsh
+		ObjectOutputStream out;
+		ObjectInputStream in;
+		String message;
+		while (true) {
+			if (!recieveorsend)
+				try {
+					requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), 4321); //local address
+
+					out = new ObjectOutputStream(requestSocket.getOutputStream());
+					in = new ObjectInputStream(requestSocket.getInputStream());
 
 
-			String message = (String) pubOIS.readObject();
-			while(message!=null){
-				BusAndLocation TransformedMessage=(Suitmessage(message));
-				DataFromPublisher.add(TransformedMessage);//Suitmessage UNDONE
-				PutData( TransformedMessage);
-				message = (String) pubOIS.readObject();
-				if(!Keys.containsKey(TransformedMessage.GetBusLine())) Keys.put(TransformedMessage.GetBusLine(),TransformedMessage);
-			}
-			pubServerSocket.close();
-			}
-		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		else{
-			try {
-				ChangeConsumer();
-				ServerSocket conServerSocket=new ServerSocket(port);//UNDONE
-				Socket conSocket=conServerSocket.accept();
-				ObjectOutputStream conOOS=new ObjectOutputStream(conSocket.getOutputStream());
-				conOOS.writeObject("I am responsible for these keys:\n");
-				for(String keys :Keys.keySet())
-			    conOOS.writeObject(keys+"\n");
-				//continue
-				//THE OTHER BROKERS RESPONSIBLE FOR?
-				int i=0;
-				for(Broker br : Node.getBrokers()){
-					if(gethashnumber()!=br.gethashnumber()){
-						i++;
-						conOOS.writeObject("Keys responsible  broker: " + i + "\n");
-						for(String keys: br.getKeys().keySet()) conOOS.writeObject(keys + "\n");
+					message = (String) in.readObject();
+					while (message != null) {
+						BusAndLocation TransformedMessage = (Suitmessage(message));
+						DataFromPublisher.add(TransformedMessage);//Suitmessage UNDONE
+						PutData(TransformedMessage);
+						message = (String) in.readObject();
+						if (!Keys.containsKey(TransformedMessage.GetBusLine())) Keys.put(TransformedMessage.GetBusLine(), TransformedMessage);
 					}
-				}
-				ObjectInputStream conOIS=new ObjectInputStream(conSocket.getInputStream());
-				String message;
-				message = (String) conOIS.readObject();
-				
-				while(message != null){
-					conOOS.writeObject("Bus from line " + message+"\n");
-					for(BusAndLocation dr:DataResponsible){
-						if(dr.GetBusLine().equals(message))
-						conOOS.writeObject("Bus: " + dr.GetBusLine() + " location"+dr.GetLongitude() + " "+dr.GetLatitude() + "\n");
-					}
-					message = (String) conOIS.readObject();
-				}
-				conOOS.writeObject("That's all for now\n");
-				conServerSocket.close();
-				conOOS.close();
-				conOIS.close();
-				} catch (ClassNotFoundException | IOException e) {
+					requestSocket.close();
+				}catch (IOException | ClassNotFoundException e) {
 					e.printStackTrace();
 				}
+			else {
+				try {
+					requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), 4321); //local address
+
+					out = new ObjectOutputStream(requestSocket.getOutputStream());
+					in = new ObjectInputStream(requestSocket.getInputStream());
+
+					out.writeObject("I am responsible for these keys:\n");
+					message = (String) in.readObject();
+
+					for (String keys : Keys.keySet())
+						out.writeObject(keys + "\n");
+					//continue
+					//THE OTHER BROKERS RESPONSIBLE FOR?
+					int i = 0;
+					for (Broker br : Node.getBrokers()) {
+						if (gethashnumber() != br.gethashnumber()) {
+							i++;
+							out.writeObject("Keys responsible  broker: " + i + "\n");
+							for (String keys : br.getKeys().keySet()) out.writeObject(keys + "\n");
+						}
+					}
+
+					while (message != null) {
+						out.writeObject("Bus from line " + message + "\n");
+						for (BusAndLocation dr : DataResponsible) {
+							if (dr.GetBusLine().equals(message))
+								out.writeObject("Bus: " + dr.GetBusLine() + " location" + dr.GetLongitude() + " " + dr.GetLatitude() + "\n");
+						}
+						message = (String) in.readObject();
+					}
+					out.writeObject("That's all for now\n");
+					requestSocket.close();
+					out.close();
+					in.close();
+				} catch (ClassNotFoundException | IOException e) {
+					e.printStackTrace();
+					System.err.println("data received in unknown format");
+				}
+			}
 		}
-	}   
+	}
 
 	public static ArrayList<BusAndLocation> GetDataFromPublisher(){
     	 return  DataFromPublisher;
