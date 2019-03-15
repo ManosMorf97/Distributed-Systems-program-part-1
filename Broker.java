@@ -17,19 +17,19 @@ public class Broker implements Runnable{
 	private static ArrayList<BusAndLocation> DataResponsible;
 	private ArrayList<Consumer> consumers;
 	private ArrayList<Publisher> registeredPublishers;
-	private Iterator registeredPublishersIterator = registeredPublishers.iterator();
+	private Iterator registeredPublishersIterator = null;
 	private static ArrayList<String> Keys;
 	private static int PublisherID = -1;//UNDONE
 	private static int ConsumerID = -1;//UNDONE
 
-	public Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers) {
+	private Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers) {
 		this.consumers = consumers;
 		this.registeredPublishers = registeredPublishers;
 	}
 
 	private ArrayList<String> getKeys(){
 		return Keys;
-		}
+	}
 	
 	public void sethashnumer(int hashnumber){
 		this.hashnumber=hashnumber;
@@ -58,8 +58,9 @@ public class Broker implements Runnable{
     	 for(int i=0; i<ammountofCons; i++) threadsCon[i].join();
 	}
 	private void ChangePublisher(){//UNDONE
-    	 registeredPublishersIterator.next();
-     }
+    	if(registeredPublishersIterator == null) registeredPublishersIterator = registeredPublishers.iterator();
+		registeredPublishersIterator.next();
+	}
     private void ChangeConsumer(){//UNDONE
     	 
 	}
@@ -130,7 +131,6 @@ public class Broker implements Runnable{
 				conOOS.close();
 				conOIS.close();
 				} catch (ClassNotFoundException | IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		}
@@ -138,15 +138,16 @@ public class Broker implements Runnable{
 	
 	
 	
-     public static ArrayList<BusAndLocation> GetDataFromPublisher(){
+	public static ArrayList<BusAndLocation> GetDataFromPublisher(){
     	 return  DataFromPublisher;
-     }
+	}
+
 	private String MD5(String md5) {
 		try {
 			java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
 			byte[] array = md.digest(md5.getBytes());
 			StringBuilder sb = new StringBuilder();
-			for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100).substring(1, 3));
+			for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100), 1, 3);
 			return sb.toString();
 		} catch (java.security.NoSuchAlgorithmException ignored) {}
 		return null;
