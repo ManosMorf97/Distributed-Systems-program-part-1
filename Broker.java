@@ -57,17 +57,17 @@ public class Broker{
 	public static void main(String[] args) throws IOException,InterruptedException {
 
 		// server is listening on port 5056
-		Thread [] pubthread=new Thread[registeredPublishers.size()];
+		Thread [] pubthread = new Thread[registeredPublishers.size()];
 		for(int i=0; i<registeredPublishers.size(); i++){
-			pubthread[i]=new Thread(new PubBroker(i));
+			pubthread[i] = new Thread(new PubBroker(i));
 			pubthread[i].start();
 		}
 		for(int i=0; i<registeredPublishers.size(); i++){
 			pubthread[i].join();
 		}
-		Thread [] conthread=new Thread[consumers.size()];
+		Thread [] conthread = new Thread[consumers.size()];
 		for(int i=0; i<consumers.size(); i++){
-			conthread[i]=new Thread(new ConBroker(i));
+			conthread[i] = new Thread(new ConBroker(i));
 			conthread[i].start();
 		}
 		for(int i=0; i<consumers.size(); i++){
@@ -124,6 +124,7 @@ public class Broker{
 			   //THE OTHER BROKERS RESPONSIBLE FOR?
 			   int i = 0;
 			   for (Broker br : Node.getBrokers()) {
+			   	//Afto einai panta false giati to egrapses?????????????
 				   if (gethashnumber() != br.gethashnumber()) {
 					   i++;
 					   out.writeObject("Keys responsible  broker: " + i + "\n");

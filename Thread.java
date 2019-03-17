@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class Thread extends java.lang.Thread {
-    private final DataInputStream dis;
-    private final DataOutputStream dos;
-    private final Socket s;
+    private DataInputStream dis;
+    private DataOutputStream dos;
+    private Socket s;
 
 
     // Constructor
@@ -15,6 +15,12 @@ public class Thread extends java.lang.Thread {
         this.s = s;
         this.dis = dis;
         this.dos = dos;
+    }
+
+    public Thread(Broker.PubBroker pubBroker) {
+    }
+
+    public Thread(Broker.ConBroker conBroker) {
     }
 
     @Override
