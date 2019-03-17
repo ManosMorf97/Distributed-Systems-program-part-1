@@ -12,9 +12,9 @@ public class Thread extends java.lang.Thread {
     // Constructor
     public Thread(Socket s, DataInputStream dis, DataOutputStream dos)
     {
-        this.s = s;
-        this.dis = dis;
-        this.dos = dos;
+        Thread.s = s;
+        Thread.dis = dis;
+        Thread.dos = dos;
     }
 
     public Thread(Broker.PubBroker pubBroker) {
@@ -39,8 +39,8 @@ public class Thread extends java.lang.Thread {
         try
         {
             // closing resources
-            this.dis.close();
-            this.dos.close();
+            dis.close();
+            dos.close();
 
         }catch(IOException e){
             e.printStackTrace();
