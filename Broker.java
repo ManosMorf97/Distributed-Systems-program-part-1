@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,37 +8,40 @@ import java.util.HashMap;
 
 //lol
 public class Broker{
+	private DataInputStream dis;
+	private DataOutputStream dos;
+	private Socket s;
 	private static int hashnumber;
 	private static String hashstring;
 	private static boolean recieveorsend = false;
 	//we want the data from publisher
 	private static ArrayList<BusAndLocation> DataFromPublisher;
 	private static ArrayList<BusAndLocation> DataResponsible;
-	private static ArrayList<Consumer> consumers;
-	private static ArrayList<Publisher> registeredPublishers;
+	protected static ArrayList<Consumer> consumers;
+	protected static int registeredPublishers;
 	private static HashMap<String, BusAndLocation> Keys;
 	private static int PublisherID = -1;//UNDONE
 	private static int ConsumerID = -1;//UNDONE
 
 
 
-	private Broker(Socket s, DataInputStream dis, DataOutputStream dos) {
+	/*private Broker(Socket s, DataInputStream dis, DataOutputStream dos) {
 		registeredPublishers = new ArrayList<>();
 		registeredPublishers.add(new Publisher());
 		consumers = new ArrayList<>();
 		consumers.add(new Consumer());
-		Thread.s = s;
-		Thread.dis = dis;
-		Thread.dos = dos;
+		this.s = s;
+		this.dis = dis;
+		this.dos = dos;
 	}
 
 	private Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers,int hashnumber, String hashstring) {
-		Broker.consumers = consumers;
-		Broker.registeredPublishers = registeredPublishers;
-		Broker.hashnumber = hashnumber;
-		Broker.hashstring = hashstring;
+		this.consumers = consumers;
+		this.registeredPublishers = registeredPublishers;
+		this.hashnumber = hashnumber;
+		this.hashstring = hashstring;
 	}
-
+*/
 	private HashMap<String,BusAndLocation> getKeys(){
 		return Keys;
 	}
@@ -53,17 +57,19 @@ public class Broker{
 	public static void main(String[] args) throws IOException,InterruptedException {
 
 		// server is listening on port 5056
-		Thread [] pubthread = new Thread[registeredPublishers.size()];
-		for(int i=0; i<registeredPublishers.size(); i++){
-			pubthread[i] = new Thread(new PubBroker(i));
+		Thread [] pubthread=new Thread[registeredPublishers];
+		ServerSocket sc=new ServerSocket(5056);
+		for(int i=0; i<registeredPublishers; i++){
+			Socket soc=sc.accept();
+			pubthread[i]=new Thread(new PubBroker(soc));
 			pubthread[i].start();
 		}
-		for(int i=0; i<registeredPublishers.size(); i++){
+		for(int i=0; i<registeredPublishers; i++){
 			pubthread[i].join();
 		}
-		Thread [] conthread = new Thread[consumers.size()];
+		Thread [] conthread=new Thread[consumers.size()];
 		for(int i=0; i<consumers.size(); i++){
-			conthread[i] = new Thread(new ConBroker(i));
+			conthread[i]=new Thread(new ConBroker(i));
 			conthread[i].start();
 		}
 		for(int i=0; i<consumers.size(); i++){
@@ -71,16 +77,13 @@ public class Broker{
 		}
 	}
    public static class PubBroker implements Runnable{
-		int number_of_pub;
-		PubBroker(int number_of_pub){
-			this.number_of_pub=number_of_pub;
+		private Socket port_of_pub;
+		public PubBroker(Socket port_of_pub){
+			this.port_of_pub=port_of_pub;
 		}
 		public void run(){
 			try {
-				Socket requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), 4321); //local address
-
-				ObjectOutputStream out = new ObjectOutputStream(requestSocket.getOutputStream());
-				ObjectInputStream in = new ObjectInputStream(requestSocket.getInputStream());
+				ObjectInputStream in = new ObjectInputStream(port_of_pub.getInputStream());
 
 
 				String message = (String) in.readObject();
@@ -91,7 +94,6 @@ public class Broker{
 					message = (String) in.readObject();
 					if (!Keys.containsKey(TransformedMessage.GetBusLine())) Keys.put(TransformedMessage.GetBusLine(), TransformedMessage);
 				}
-				requestSocket.close();
 			}catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -100,7 +102,7 @@ public class Broker{
    public static class ConBroker implements Runnable {
 	   int number_of_cons;
 
-	   ConBroker(int number_of_cons) {
+	   public ConBroker(int number_of_cons) {
 		   this.number_of_cons = number_of_cons;
 	   }
 
@@ -120,7 +122,6 @@ public class Broker{
 			   //THE OTHER BROKERS RESPONSIBLE FOR?
 			   int i = 0;
 			   for (Broker br : Node.getBrokers()) {
-			   	//Afto einai panta false giati to egrapses?????????????
 				   if (gethashnumber() != br.gethashnumber()) {
 					   i++;
 					   out.writeObject("Keys responsible  broker: " + i + "\n");
