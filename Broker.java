@@ -8,17 +8,14 @@ import java.util.HashMap;
 
 //lol
 public class Broker{
-	private DataInputStream dis;
-	private DataOutputStream dos;
-	private Socket s;
 	private static int hashnumber;
 	private static String hashstring;
 	private static boolean recieveorsend = false;
 	//we want the data from publisher
 	private static ArrayList<BusAndLocation> DataFromPublisher;
 	private static ArrayList<BusAndLocation> DataResponsible;
-	protected static ArrayList<Consumer> consumers;
-	protected static ArrayList<Publisher> registeredPublishers;
+	private static ArrayList<Consumer> consumers;
+	private static ArrayList<Publisher> registeredPublishers;
 	private static HashMap<String, BusAndLocation> Keys;
 	private static int PublisherID = -1;//UNDONE
 	private static int ConsumerID = -1;//UNDONE
@@ -30,16 +27,16 @@ public class Broker{
 		registeredPublishers.add(new Publisher());
 		consumers = new ArrayList<>();
 		consumers.add(new Consumer());
-		this.s = s;
-		this.dis = dis;
-		this.dos = dos;
+		Thread.s = s;
+		Thread.dis = dis;
+		Thread.dos = dos;
 	}
 
 	private Broker(ArrayList<Consumer> consumers, ArrayList<Publisher> registeredPublishers,int hashnumber, String hashstring) {
-		this.consumers = consumers;
-		this.registeredPublishers = registeredPublishers;
-		this.hashnumber = hashnumber;
-		this.hashstring = hashstring;
+		Broker.consumers = consumers;
+		Broker.registeredPublishers = registeredPublishers;
+		Broker.hashnumber = hashnumber;
+		Broker.hashstring = hashstring;
 	}
 
 	private HashMap<String,BusAndLocation> getKeys(){
@@ -76,7 +73,7 @@ public class Broker{
 	}
    public static class PubBroker implements Runnable{
 		int number_of_pub;
-		public PubBroker(int number_of_pub){
+		PubBroker(int number_of_pub){
 			this.number_of_pub=number_of_pub;
 		}
 		public void run(){
@@ -104,7 +101,7 @@ public class Broker{
    public static class ConBroker implements Runnable {
 	   int number_of_cons;
 
-	   public ConBroker(int number_of_cons) {
+	   ConBroker(int number_of_cons) {
 		   this.number_of_cons = number_of_cons;
 	   }
 

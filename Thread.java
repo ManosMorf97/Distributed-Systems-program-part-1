@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class Thread extends java.lang.Thread {
-    private DataInputStream dis;
-    private DataOutputStream dos;
-    private Socket s;
+    static DataInputStream dis;
+    static DataOutputStream dos;
+    static Socket s;
 
 
     // Constructor
