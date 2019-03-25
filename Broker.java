@@ -7,6 +7,10 @@ public class Broker {
 	private static int hashnumber;
 	private static String hashstring;
 	//we want the data from publisher
+	private static ArrayList<Route>routes=new ArrayList<>();
+	private static ArrayList<BusLine>busLines=new ArrayList<>();
+	private static ArrayList<BusPosition>busPositions=new ArrayList<>();
+
 	private static ArrayList<BusAndLocation> DataFromPublisher;
 	private static ArrayList<BusAndLocation> DataResponsible;
 	private static HashMap<String, BusAndLocation> Keys;
@@ -22,6 +26,64 @@ public class Broker {
 	public static ArrayList<BusAndLocation> GetDataFromPublisher() {
 		return DataFromPublisher;
 	}
+	private static void CreateRoutes(BufferedReader br) throws  IOException{
+		String line="";
+		while(line!=null){
+			String [] characteristics=new String[3];
+			line=br.readLine();
+			for(int i=0; i<3; i++){
+				int pos=line.indexOf(",");
+				characteristics[i]=line.substring(0,pos);
+				line=line.substring(pos+1);
+			}
+			int pos2=line.indexOf("[");
+			if(pos2<0)pos2=line.length();
+			routes.add(new Route(line.substring(0,pos2),characteristics[0],characteristics[1],characteristics[2]));
+			line=br.readLine();
+		}
+	}
+	private static void CreateBusLines(BufferedReader br) throws  IOException{
+		String line="";
+		while(line!=null){
+			String [] characteristics=new String[2];
+			line=br.readLine();
+			for(int i=0; i<2; i++){
+				int pos=line.indexOf(",");
+				characteristics[i]=line.substring(0,pos);
+				line=line.substring(pos+1);
+			}
+			for(Route r:routes){
+				if(r.getRoute().equals(line)){
+					busLines.add(new BusLine(r,characteristics[0],characteristics[1]));
+				}
+			}
+			line=br.readLine();
+		}
+	}
+	private static void CreateBusPositions(BufferedReader br)throws  IOException{
+		String line="";
+		while(line!=null){
+			String [] characteristics=new String[5];
+			line=br.readLine();
+			int pos=line.indexOf(",");
+			line=line.substring(pos+1);
+			pos=line.indexOf(",");
+			characteristics[0]=line.substring(0,pos);
+			line=line.substring(pos+1);
+			for(int i=1; i<5; i++){
+				 pos=line.indexOf(",");
+				characteristics[i]=line.substring(0,pos);
+				line=line.substring(pos+1);
+			}
+			for(BusLine bl:busLines){
+				if(bl.getLineCode().equals(characteristics[0])){
+					busPositions.add(new BusPosition(bl,characteristics[1],Double.parseDouble(characteristics[2]),Double.parseDouble(characteristics[3]),characteristics[4]));
+				}
+			}
+			line=br.readLine();
+		}
+	}
+
 
 	private static String MD5(String md5) {
 		try {
@@ -41,7 +103,7 @@ public class Broker {
 		if (MD != null && mod % 100 <= hashnumber && MD.equals(hashstring)) DataResponsible.add(Data);
 	}
 
-	private static BusAndLocation Suitmessage(String message) {//UNDONE
+	private static BusAndLocation Suit_message(String message) {//UNDONE
 		BusAndLocation BAL = new BusAndLocation();
 		//BAL.SetTopic(message.charAt(index));//SEE
 		//BAL.SetValue(Integer.parseInt(message.charAt(index)));
@@ -65,7 +127,7 @@ public class Broker {
 					out.writeObject(keys + "\n");
 				String message = (String) in.readObject();
 				while (!message.equals("bye")) {
-					BusAndLocation TransformedMessage = (Suitmessage(message));
+					BusAndLocation TransformedMessage = (Suit_message(message));
 					DataFromPublisher.add(TransformedMessage);//Suitmessage UNDONE
 					PutData(TransformedMessage);
 					message = (String) in.readObject();
@@ -118,6 +180,19 @@ public class Broker {
 	}
 
 	public void openServer() throws IOException {
+		FileReader fr=new FileReader("RouteCodesNew.txt");
+		BufferedReader br=new BufferedReader(fr);
+		CreateRoutes(br);
+		br.close();
+		fr.close();
+		fr=new FileReader("BusLinesNew.txt");
+		br=new BufferedReader(fr);
+        CreateBusLines(br);
+		br.close();
+		fr.close();
+		CreateBusPositions(br);
+		br.close();
+		fr.close();
 		ArrayList<Thread> threads = new ArrayList<>();
 		ServerSocket providerSocket = null;
 		Socket connection = null;
