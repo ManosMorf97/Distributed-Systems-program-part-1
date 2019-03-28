@@ -11,7 +11,9 @@ public class BrokerC {
     private static ArrayList<BusLine> responsibleLines=new ArrayList<>();
     private static ArrayList<BusPosition>busPositions=new ArrayList<>();
     private static ArrayList<BusPosition>datafrompublisher=new ArrayList<>();
-
+    public static ArrayList<BusLine> getResponsibleLines(){
+        return  responsibleLines;
+    }
     private static void CreateRoutes(BufferedReader br) throws IOException {
         String line="";
         while(line!=null){
@@ -39,7 +41,7 @@ public class BrokerC {
                 line=line.substring(pos+1);
             }
             for(Route r:routes){
-                if(r.getRoute().equals(line)){
+                if(r.getRouteDescription().equals(line)){
                     busLines.add(new BusLine(r,characteristics[1]));
                 }
             }
@@ -95,13 +97,13 @@ public class BrokerC {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 for(BusLine  b:busLines){
-                    if(Integer.parseInt(MD5(b.getLineId()))==Integer.parseInt(MD5(socket.getInetAddress().toString()+"4367"))){
+                    if(Integer.parseInt(MD5(b.getLineId()))<Integer.parseInt(MD5(socket.getInetAddress().toString()+"4367"))){
                         responsibleLines.add(b);
                     }
                 }
                 out.writeObject("I am responsible for these keys:\n");
                 for (BusLine  rl:responsibleLines) {
-                    out.writeObject(rl.getRoute().getRoute()+"\n");
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
                 String message = (String) in.readObject();//sypose  that the pub send the data in this way
@@ -110,7 +112,7 @@ public class BrokerC {
                     int x=(Integer)in.readObject();//check me
                     int y=(Integer)in.readObject();//check me
                     for(BusPosition bp:busPositions){
-                        if(bp.getLatitude()==y&&bp.getLongitude()==x&&bp.getLongitude()==x&&bp.getBus().getRoute().equals(lineId)){
+                        if(bp.getLatitude()==y&&bp.getLongitude()==x&&bp.getLongitude()==x&&bp.getBus().getLineId().equals(lineId)){
                             datafrompublisher.add(bp);
                         }
                     }
@@ -134,26 +136,41 @@ public class BrokerC {
                 out.writeObject("I am responsible for these keys:\n");
                 //String message = (String) in.readObject();
                 for (BusLine  rl:responsibleLines) {
-                    out.writeObject(rl.getRoute().getRoute()+"\n");
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
                 //the other brokers
-
+                out.writeObject("Broker A is responsible for these keys :\n");
+                ArrayList<BusLine> bA=BrokerA.getResponsibleLines();
+                for(BusLine rl:bA){
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
+                    out.writeObject(rl.getLineId()+"\n\n");
+                }
+                out.writeObject("Broker B is responsible for these keys :\n");
+                ArrayList<BusLine> bB=BrokerB.getResponsibleLines();
+                for(BusLine rl:bB){
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
+                    out.writeObject(rl.getLineId()+"\n\n");
+                }
 
 
                 //
                 try {
+                    out.writeObject("My responsibilities :\n");
                     String lineId = (String) in.readObject();
-                    out.writeObject("Bus from line " + lineId + "\n");
-                    for(BusLine bl:responsibleLines)
-                        if(bl.getLineId().equals(lineId))//only for my responsibility
-                            for(BusPosition bp:busPositions){
-                                if(bp.getBus().getLineId().equals(lineId)){
-                                    out.writeObject("Longitude "+bp.getLongitude()+" Latitude "+bp.getLatitude());
+                    while(!lineId.equals("bye")) {
+                        for (BusLine bl : responsibleLines)
+                            if (bl.getLineId().equals(lineId))//only for my responsibility
+                                for (BusPosition bp : busPositions) {
+                                    if (bp.getBus().getLineId().equals(lineId)) {
+                                        out.writeObject("Bus from line " + lineId + "\n");
+                                        out.writeObject("Longitude " + bp.getLongitude() + " Latitude " + bp.getLatitude());
+                                    }
                                 }
-                            }
+                        lineId = (String) in.readObject();
+                    }
                 }catch(ClassNotFoundException e){
-                    e.printStackTrace();;
+                    e.printStackTrace();
                 }
             }catch(IOException  e){
                 e.printStackTrace();

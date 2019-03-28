@@ -11,7 +11,9 @@ public  class BrokerA{
     private static ArrayList<BusLine> responsibleLines=new ArrayList<>();
     private static ArrayList<BusPosition>busPositions=new ArrayList<>();
     private static ArrayList<BusPosition>datafrompublisher=new ArrayList<>();
-
+    public static ArrayList<BusLine> getResponsibleLines(){
+        return  responsibleLines;
+    }
     private static void CreateRoutes(BufferedReader br) throws IOException {
         String line="";
         while(line!=null){
@@ -23,7 +25,7 @@ public  class BrokerA{
                 line=line.substring(pos+1);
             }
             int pos2=line.indexOf("[");
-            if(pos2<0)pos2=line.length();
+            if(pos2<0)pos2=line.length();//if ([) does not exist
             routes.add(new Route(line.substring(0,pos2),characteristics[0],characteristics[1],characteristics[2]));
             line=br.readLine();
         }
@@ -39,7 +41,7 @@ public  class BrokerA{
                 line=line.substring(pos+1);
             }
             for(Route r:routes){
-                if(r.getRoute().equals(line)){
+                if(r.getRouteDescription().equals(line)){
                     busLines.add(new BusLine(r,characteristics[1]));
                 }
             }
@@ -52,8 +54,8 @@ public  class BrokerA{
             String [] characteristics=new String[5];
             line=br.readLine();
             int pos=line.indexOf(",");
-            line=line.substring(pos+1);
-            pos=line.indexOf(",");
+            line = line.substring(pos + 1);
+            pos = line.indexOf(",");
             characteristics[0]=line.substring(0,pos);
             line=line.substring(pos+1);
             for(int i=1; i<5; i++){
@@ -95,13 +97,13 @@ public  class BrokerA{
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 for(BusLine  b:busLines){
-                    if(Integer.parseInt(MD5(b.getLineId()))==Integer.parseInt(MD5(socket.getInetAddress().toString()+"4321"))){
+                    if(Integer.parseInt(MD5(b.getLineId()))<Integer.parseInt(MD5(socket.getInetAddress().toString()+"4321"))){
                         responsibleLines.add(b);
                     }
                 }
                 out.writeObject("I am responsible for these keys:\n");
                 for (BusLine  rl:responsibleLines) {
-                    out.writeObject(rl.getRoute().getRoute()+"\n");
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
                 String message = (String) in.readObject();//sypose  that the pub send the data in this way
@@ -110,7 +112,7 @@ public  class BrokerA{
                    int x=(Integer)in.readObject();//check me
                     int y=(Integer)in.readObject();//check me
                     for(BusPosition bp:busPositions){
-                        if(bp.getLatitude()==y&&bp.getLongitude()==x&&bp.getLongitude()==x&&bp.getBus().getRoute().equals(lineId)){
+                        if(bp.getLatitude()==y&&bp.getLongitude()==x&&bp.getLongitude()==x&&bp.getBus().getLineId().equals(lineId)){
                             datafrompublisher.add(bp);
                         }
                     }
@@ -131,29 +133,44 @@ public  class BrokerA{
             try {
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                out.writeObject("I am responsible for these keys:\n");
+                out.writeObject("I am broker A and I am responsible for these keys:\n");
                 //String message = (String) in.readObject();
                 for (BusLine  rl:responsibleLines) {
-                    out.writeObject(rl.getRoute().getRoute()+"\n");
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
                 //the other brokers
-
+                out.writeObject("Broker B is responsible for these keys :\n");
+                ArrayList<BusLine> bB=BrokerB.getResponsibleLines();
+                for(BusLine rl:bB){
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
+                    out.writeObject(rl.getLineId()+"\n\n");
+                }
+                out.writeObject("Broker C is responsible for these keys :\n");
+                ArrayList<BusLine> bC=BrokerC.getResponsibleLines();
+                for(BusLine rl:bC){
+                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
+                    out.writeObject(rl.getLineId()+"\n\n");
+                }
 
 
                 //
                 try {
                     String lineId = (String) in.readObject();
-                    out.writeObject("Bus from line " + lineId + "\n");
-                   for(BusLine bl:responsibleLines)
-                       if(bl.getLineId().equals(lineId))//only for my responsibility
-                    for(BusPosition bp:busPositions){
-                        if(bp.getBus().getLineId().equals(lineId)){
-                            out.writeObject("Longitude "+bp.getLongitude()+" Latitude "+bp.getLatitude());
-                        }
+                    out.writeObject("My responsibilities :\n");
+                    while(!lineId.equals("bye")) {
+                        for (BusLine bl : responsibleLines)
+                            if (bl.getLineId().equals(lineId))//only for my responsibility
+                                for (BusPosition bp : busPositions) {
+                                    if (bp.getBus().getLineId().equals(lineId)) {
+                                        out.writeObject("Bus from line " + lineId + "\n");
+                                        out.writeObject("Longitude " + bp.getLongitude() + " Latitude " + bp.getLatitude() + "\n");
+                                    }
+                                }
+                        lineId = (String) in.readObject();
                     }
                 }catch(ClassNotFoundException e){
-                    e.printStackTrace();;
+                    e.printStackTrace();
                 }
             }catch(IOException  e){
                 e.printStackTrace();
