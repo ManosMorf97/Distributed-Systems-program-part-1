@@ -24,7 +24,7 @@ class Utilities {
     }
 
 
-    static void CreateBusPositions(BufferedReader br, ArrayList<BusLine> busLines, ArrayList<BusPosition> busPositions)throws IOException {
+    private static void CreateBusPositions(BufferedReader br, ArrayList<BusLine> busLines, ArrayList<BusPosition> busPositions)throws IOException {
         String line="";
         while(line!=null){
             String [] characteristics=new String[5];
@@ -49,7 +49,7 @@ class Utilities {
     }
 
 
-    static void CreateRoutes(BufferedReader br, ArrayList<Route> routes) throws IOException {
+    private static void CreateRoutes(BufferedReader br, ArrayList<Route> routes) throws IOException {
         String line = "";
         while(line != null){
             String [] characteristics = new String[3];
@@ -65,7 +65,7 @@ class Utilities {
             line = br.readLine();
         }
     }
-    static void CreateBusLines(BufferedReader br, ArrayList<Route> routes, ArrayList<BusLine> busLines) throws  IOException{
+    private static void CreateBusLines(BufferedReader br, ArrayList<Route> routes, ArrayList<BusLine> busLines) throws  IOException{
         String line="";
         while(line!=null){
             String [] characteristics=new String[2];
@@ -85,13 +85,13 @@ class Utilities {
     }
 
     void openServer(int port) throws IOException {
-        FileReader fr=new FileReader("RouteCodesNew.txt");
-        BufferedReader br=new BufferedReader(fr);
+        FileReader fr = new FileReader("RouteCodesNew.txt");
+        BufferedReader br = new BufferedReader(fr);
         CreateRoutes(br,routes);
         br.close();
         fr.close();
-        fr=new FileReader("BusLinesNew.txt");
-        br=new BufferedReader(fr);
+        fr = new FileReader("BusLinesNew.txt");
+        br = new BufferedReader(fr);
         CreateBusLines(br,routes,busLines);
         br.close();
         fr.close();
