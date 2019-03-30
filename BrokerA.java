@@ -23,15 +23,11 @@ public  class BrokerA{
         }
 
         public void run() {
-
             try {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                for(BusLine  b:busLines){
-                    if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString() + "4321"))){
-                        responsibleLines.add(b);
-                    }
-                }
+                for(BusLine  b:busLines) if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString() + "4321"))) responsibleLines.add(b);
+
                 out.writeObject("I am responsible for these keys:\n");
                 for (BusLine  rl:responsibleLines) {
                     out.writeObject(rl.getRoute().getRouteDescription()+"\n");
@@ -42,11 +38,7 @@ public  class BrokerA{
                    String lineId=(String) in.readObject();
                    int x=(Integer)in.readObject();//check me
                     int y=(Integer)in.readObject();//check me
-                    for(BusPosition bp:busPositions){
-                        if(bp.getLatitude() == y&&bp.getLongitude() == x&&bp.getLongitude() == x&&bp.getBus().getLineId().equals(lineId)){
-                            datafrompublisher.add(bp);
-                        }
-                    }
+                    for(BusPosition bp:busPositions) if(bp.getLatitude() == y&&bp.getLongitude() == x&&bp.getLongitude() == x&&bp.getBus().getLineId().equals(lineId)) datafrompublisher.add(bp);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -112,7 +104,5 @@ public  class BrokerA{
     public static void main(String[] args) throws IOException{
         new Utilities().openServer(5090);
     }
-
-
 }
 
