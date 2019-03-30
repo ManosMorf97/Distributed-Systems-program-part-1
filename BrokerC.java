@@ -111,64 +111,7 @@ public class BrokerC {
         }
     }
     public static void main(String[] args) throws IOException{
-        new BrokerA().openServer();
+        new Utilities().openServer(5056);
     }
 
-    public void openServer() throws IOException {
-        FileReader fr=new FileReader("RouteCodesNew.txt");
-        BufferedReader br=new BufferedReader(fr);
-        Utilities.CreateRoutes(br,routes);
-        br.close();
-        fr.close();
-        fr=new FileReader("BusLinesNew.txt");
-        br=new BufferedReader(fr);
-        Utilities.CreateBusLines(br,routes,busLines);
-        br.close();
-        fr.close();
-        Utilities.CreateBusPositions(br,busLines,busPositions);
-        br.close();
-        fr.close();
-        ArrayList<Thread> threads = new ArrayList<>();
-        ServerSocket providerSocket;
-        Socket connection ;
-        providerSocket = new ServerSocket(4367);
-        try {
-            while (true) {
-                for (int i = 0; i < 10; i++) {
-                    connection = providerSocket.accept();
-                    ComunicationWithPublisherThread CWPT = new ComunicationWithPublisherThread(connection);
-                    Thread t1 = new Thread(CWPT);
-                    t1.start();
-                    threads.add(t1);
-                }
-                for (Thread thr : threads) {
-                    try {
-                        thr.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                providerSocket = new ServerSocket(5056);
-                for (int i = 0; i < 10; i++) {
-                    connection = providerSocket.accept();
-                    ComunicationWithConsumerThread CWCT = new ComunicationWithConsumerThread(connection);
-                    Thread t1 = new Thread(CWCT);
-                    t1.start();
-                    threads.add(t1);
-                }
-                for (Thread thr : threads) {
-                    try {
-                        thr.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
 }
