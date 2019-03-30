@@ -44,7 +44,6 @@ public  class BrokerA{
                 e.printStackTrace();
             }
         }
-
     }
 
     public static class ComunicationWithConsumerThread implements  Runnable{
