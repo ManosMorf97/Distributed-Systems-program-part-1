@@ -24,7 +24,7 @@ class Publisher{
         try {
             providerSocket = new ServerSocket(4321);
 
-            while (true) { //o server lamvanei aithmata apo client mexri na termatistei h synthikh
+            while(true) { //o server lamvanei aithmata apo client mexri na termatistei h synthikh
 
                 connection = providerSocket.accept(); //server socket
 

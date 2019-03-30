@@ -15,7 +15,6 @@ public  class BrokerA{
         return  responsibleLines;
     }
 
-
     public static class ComunicationWithPublisherThread implements Runnable {
         private Socket socket;
 
@@ -29,7 +28,7 @@ public  class BrokerA{
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 for(BusLine  b:busLines){
-                    if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString()+"4321"))){
+                    if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString() + "4321"))){
                         responsibleLines.add(b);
                     }
                 }
@@ -44,7 +43,7 @@ public  class BrokerA{
                    int x=(Integer)in.readObject();//check me
                     int y=(Integer)in.readObject();//check me
                     for(BusPosition bp:busPositions){
-                        if(bp.getLatitude()==y&&bp.getLongitude()==x&&bp.getLongitude()==x&&bp.getBus().getLineId().equals(lineId)){
+                        if(bp.getLatitude() == y&&bp.getLongitude() == x&&bp.getLongitude() == x&&bp.getBus().getLineId().equals(lineId)){
                             datafrompublisher.add(bp);
                         }
                     }
@@ -55,6 +54,7 @@ public  class BrokerA{
         }
 
     }
+
     public static class ComunicationWithConsumerThread implements  Runnable{
         private Socket socket;
 
@@ -68,15 +68,15 @@ public  class BrokerA{
                 out.writeObject("I am broker A and I am responsible for these keys:\n");
                 //String message = (String) in.readObject();
                 for (BusLine  rl:responsibleLines) {
-                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
+                    out.writeObject(rl.getRoute().getRouteDescription() + "\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
                 //the other brokers
                 out.writeObject("Broker B is responsible for these keys :\n");
                 ArrayList<BusLine> bB=BrokerB.getResponsibleLines();
                 for(BusLine rl:bB){
-                    out.writeObject(rl.getRoute().getRouteDescription()+"\n");
-                    out.writeObject(rl.getLineId()+"\n\n");
+                    out.writeObject(rl.getRoute().getRouteDescription() + "\n");
+                    out.writeObject(rl.getLineId() + "\n\n");
                 }
                 out.writeObject("Broker C is responsible for these keys :\n");
                 ArrayList<BusLine> bC=BrokerC.getResponsibleLines();
@@ -84,7 +84,6 @@ public  class BrokerA{
                     out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
-
 
                 //
                 try {

@@ -11,7 +11,7 @@ public class BrokerC {
     private static ArrayList<BusLine> responsibleLines=new ArrayList<>();
     private static ArrayList<BusPosition>busPositions=new ArrayList<>();
     private static ArrayList<BusPosition>datafrompublisher=new ArrayList<>();
-    public static ArrayList<BusLine> getResponsibleLines(){
+    static ArrayList<BusLine> getResponsibleLines(){
         return  responsibleLines;
     }
 

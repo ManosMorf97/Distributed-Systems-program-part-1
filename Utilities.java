@@ -26,18 +26,18 @@ class Utilities {
 
     private static void CreateBusPositions(BufferedReader br, ArrayList<BusLine> busLines, ArrayList<BusPosition> busPositions)throws IOException {
         String line="";
-        while(line!=null){
+        while(line != null){
             String [] characteristics=new String[5];
             line=br.readLine();
             int pos=line.indexOf(",");
             line = line.substring(pos + 1);
             pos = line.indexOf(",");
             characteristics[0]=line.substring(0,pos);
-            line=line.substring(pos+1);
+            line=line.substring(pos + 1);
             for(int i=1; i<5; i++){
                 pos=line.indexOf(",");
                 characteristics[i]=line.substring(0,pos);
-                line=line.substring(pos+1);
+                line=line.substring(pos + 1);
             }
             for(BusLine bl:busLines){
                 if(bl.getRoute().getLineCode().equals(characteristics[0])){
@@ -103,7 +103,8 @@ class Utilities {
         Socket connection ;
         providerSocket = new ServerSocket(4321);
         try {
-            while (true) {
+            while(true) {
+
                 for (int i = 0; i < 10; i++) {
                     connection = providerSocket.accept();
                     BrokerA.ComunicationWithPublisherThread CWPT = new BrokerA.ComunicationWithPublisherThread(connection);
@@ -111,6 +112,7 @@ class Utilities {
                     t1.start();
                     threads.add(t1);
                 }
+
                 for (Thread thr : threads) {
                     try {
                         thr.join();
