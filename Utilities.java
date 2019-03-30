@@ -8,9 +8,7 @@ import java.util.ArrayList;
 class Utilities {
     private static ArrayList<Route> routes = new ArrayList<>();
     private static ArrayList<BusLine> busLines = new ArrayList<>();
-    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
-    private static ArrayList<BusPosition> datafrompublisher = new ArrayList<>();
 
     static String MD5(String md5) {
         try {
@@ -136,8 +134,6 @@ class Utilities {
                         e.printStackTrace();
                     }
                 }
-
-
             }
         }catch(Exception e){
             e.printStackTrace();
