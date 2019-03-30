@@ -1,15 +1,31 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 class Utilities {
     private static ArrayList<Route> routes = new ArrayList<>();
     private static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
-
+    private static ArrayList<BusLine> responsibleLines=new ArrayList<>();
+    public static  ArrayList<BusLine> getResponsibleLines(){
+        return responsibleLines;
+    }
+    public  void ActivateResponsibility(){
+        for(BusLine  b:busLines){
+            try {
+                if ((Utilities.MD5(b.getLineId())).compareTo(Utilities.MD5(InetAddress.getLocalHost().toString() + "4321"))<0) {
+                    responsibleLines.add(b);
+                }
+            }catch(UnknownHostException e){
+                e.printStackTrace();
+            }
+        }
+    }
     static String MD5(String md5) {
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
@@ -22,20 +38,21 @@ class Utilities {
     }
 
 
-    private static void CreateBusPositions(BufferedReader br, ArrayList<BusLine> busLines, ArrayList<BusPosition> busPositions)throws IOException {
-        String line="";
-        while(line != null){
+    private static void CreateBusPositions(BufferedReader br)throws IOException {
+        String line=br.readLine();
+        while(line!=null){
             String [] characteristics=new String[5];
-            line=br.readLine();
             int pos=line.indexOf(",");
             line = line.substring(pos + 1);
             pos = line.indexOf(",");
             characteristics[0]=line.substring(0,pos);
-            line=line.substring(pos + 1);
+            line=line.substring(pos+1);
             for(int i=1; i<5; i++){
                 pos=line.indexOf(",");
+                if(pos<0)pos=line.length();
                 characteristics[i]=line.substring(0,pos);
-                line=line.substring(pos + 1);
+                if(i!=4)
+                    line=line.substring(pos+1);
             }
             for(BusLine bl:busLines){
                 if(bl.getRoute().getLineCode().equals(characteristics[0])){
@@ -93,15 +110,17 @@ class Utilities {
         CreateBusLines(br,routes,busLines);
         br.close();
         fr.close();
-        CreateBusPositions(br,busLines,busPositions);
+        fr=new FileReader("BusPositionsNew.txt");
+        br=new BufferedReader(fr);
+        CreateBusPositions(br);
         br.close();
         fr.close();
+        ActivateResponsibility();
         ArrayList<Thread> threads = new ArrayList<>();
         ServerSocket providerSocket;
         Socket connection ;
-        providerSocket = new ServerSocket(4321);
         try {
-            while(true) {
+            /*while(true) {
 
                 for (int i = 0; i < 10; i++) {
                     connection = providerSocket.accept();
@@ -118,10 +137,10 @@ class Utilities {
                         e.printStackTrace();
                     }
                 }
+*/
 
-                providerSocket = new ServerSocket(port);
-                for (int i = 0; i < 10; i++) {
-                    connection = providerSocket.accept();
+                for (int i = 0; i < 1; i++) {
+                    connection = new Socket(InetAddress.getByName("127.0.0.1"),4321);
                     BrokerA.ComunicationWithConsumerThread CWCT = new BrokerA.ComunicationWithConsumerThread(connection);
                     Thread t1 = new Thread(CWCT);
                     t1.start();
@@ -134,7 +153,7 @@ class Utilities {
                         e.printStackTrace();
                     }
                 }
-            }
+
         }catch(Exception e){
             e.printStackTrace();
         }
