@@ -9,7 +9,7 @@ import java.util.Objects;
 
 class Publisher{
 
-    private static HashMap<String, BusAndLocation> Keys;
+    private static HashMap<String, BusPosition> Keys;
 
     private ArrayList<Publisher> registeredPublishers;
 
@@ -59,7 +59,7 @@ class Publisher{
         }
 }
 
-    private HashMap<String,BusAndLocation> getKeys(){
+    private HashMap<String,BusPosition> getKeys(){
         return Keys;
     }
 

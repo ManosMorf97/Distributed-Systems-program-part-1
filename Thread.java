@@ -17,7 +17,7 @@ public class Thread extends java.lang.Thread {
         Thread.dos = dos;
     }
 
-    public Thread(Broker.PubBroker pubBroker) {
+    public Thread(BrokerA.PubBroker pubBroker) {
     }
 
     public Thread(Broker.ConBroker conBroker) {

@@ -6,28 +6,30 @@ import java.util.ArrayList;
 //value busPosition
 
 public  class BrokerA{
-    private static ArrayList<Route> routes=new ArrayList<>();
-    private static ArrayList<BusLine>busLines=new ArrayList<>();
-    private static ArrayList<BusLine> responsibleLines=new ArrayList<>();
-    private static ArrayList<BusPosition>busPositions=new ArrayList<>();
-    private static ArrayList<BusPosition>datafrompublisher=new ArrayList<>();
-    public static ArrayList<BusLine> getResponsibleLines(){
+    private static ArrayList<Route> routes = new ArrayList<>();
+    private static ArrayList<BusLine> busLines = new ArrayList<>();
+    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
+    private static ArrayList<BusPosition> busPositions = new ArrayList<>();
+    private static ArrayList<BusPosition> datafrompublisher = new ArrayList<>();
+
+    static ArrayList<BusLine> getResponsibleLines(){
         return  responsibleLines;
     }
+
     private static void CreateRoutes(BufferedReader br) throws IOException {
-        String line="";
-        while(line!=null){
-            String [] characteristics=new String[3];
-            line=br.readLine();
-            for(int i=0; i<3; i++){
-                int pos=line.indexOf(",");
-                characteristics[i]=line.substring(0,pos);
-                line=line.substring(pos+1);
+        String line = "";
+        while(line != null){
+            String [] characteristics = new String[3];
+            line = br.readLine();
+            for(int i=0; i < 3; i++){
+                int pos = line.indexOf(",");
+                characteristics[i] = line.substring(0,pos);
+                line = line.substring(pos+1);
             }
-            int pos2=line.indexOf("[");
-            if(pos2<0)pos2=line.length();//if ([) does not exist
+            int pos2 = line.indexOf("[");
+            if(pos2<0)pos2 = line.length();//if ([) does not exist
             routes.add(new Route(line.substring(0,pos2),characteristics[0],characteristics[1],characteristics[2]));
-            line=br.readLine();
+            line = br.readLine();
         }
     }
     private static void CreateBusLines(BufferedReader br) throws  IOException{
@@ -73,21 +75,11 @@ public  class BrokerA{
     }
 
 
-    private static String MD5(String md5) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100), 1, 3);
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException ignored) {
-        }
-        return null;
-    }
+
     public static class ComunicationWithPublisherThread implements Runnable {
         private Socket socket;
 
-        public ComunicationWithPublisherThread (Socket socket) {
+        ComunicationWithPublisherThread (Socket socket) {
             this.socket = socket;
         }
 
@@ -97,7 +89,7 @@ public  class BrokerA{
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 for(BusLine  b:busLines){
-                    if(Integer.parseInt(MD5(b.getLineId()))<Integer.parseInt(MD5(socket.getInetAddress().toString()+"4321"))){
+                    if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString()+"4321"))){
                         responsibleLines.add(b);
                     }
                 }
@@ -126,7 +118,7 @@ public  class BrokerA{
     public static class ComunicationWithConsumerThread implements  Runnable{
         private Socket socket;
 
-        public ComunicationWithConsumerThread(Socket socket){
+        ComunicationWithConsumerThread(Socket socket){
             this.socket=socket;
         }
         public void run(){
@@ -182,7 +174,7 @@ public  class BrokerA{
         new BrokerA().openServer();
     }
 
-    public void openServer() throws IOException {
+    void openServer() throws IOException {
         FileReader fr=new FileReader("RouteCodesNew.txt");
         BufferedReader br=new BufferedReader(fr);
         CreateRoutes(br);
