@@ -16,65 +16,6 @@ public  class BrokerA{
         return  responsibleLines;
     }
 
-    private static void CreateRoutes(BufferedReader br) throws IOException {
-        String line = "";
-        while(line != null){
-            String [] characteristics = new String[3];
-            line = br.readLine();
-            for(int i=0; i < 3; i++){
-                int pos = line.indexOf(",");
-                characteristics[i] = line.substring(0,pos);
-                line = line.substring(pos+1);
-            }
-            int pos2 = line.indexOf("[");
-            if(pos2<0)pos2 = line.length();//if ([) does not exist
-            routes.add(new Route(line.substring(0,pos2),characteristics[0],characteristics[1],characteristics[2]));
-            line = br.readLine();
-        }
-    }
-    private static void CreateBusLines(BufferedReader br) throws  IOException{
-        String line="";
-        while(line!=null){
-            String [] characteristics=new String[2];
-            line=br.readLine();
-            for(int i=0; i<2; i++){
-                int pos=line.indexOf(",");
-                characteristics[i]=line.substring(0,pos);
-                line=line.substring(pos+1);
-            }
-            for(Route r:routes){
-                if(r.getRouteDescription().equals(line)){
-                    busLines.add(new BusLine(r,characteristics[1]));
-                }
-            }
-            line=br.readLine();
-        }
-    }
-    private static void CreateBusPositions(BufferedReader br)throws  IOException{
-        String line="";
-        while(line!=null){
-            String [] characteristics=new String[5];
-            line=br.readLine();
-            int pos=line.indexOf(",");
-            line = line.substring(pos + 1);
-            pos = line.indexOf(",");
-            characteristics[0]=line.substring(0,pos);
-            line=line.substring(pos+1);
-            for(int i=1; i<5; i++){
-                pos=line.indexOf(",");
-                characteristics[i]=line.substring(0,pos);
-                line=line.substring(pos+1);
-            }
-            for(BusLine bl:busLines){
-                if(bl.getRoute().getLineCode().equals(characteristics[0])){
-                    busPositions.add(new BusPosition(bl,characteristics[1],Double.parseDouble(characteristics[2]),Double.parseDouble(characteristics[3]),characteristics[4]));
-                }
-            }
-            line=br.readLine();
-        }
-    }
-
-
 
     public static class ComunicationWithPublisherThread implements Runnable {
         private Socket socket;
@@ -177,15 +118,15 @@ public  class BrokerA{
     void openServer() throws IOException {
         FileReader fr=new FileReader("RouteCodesNew.txt");
         BufferedReader br=new BufferedReader(fr);
-        CreateRoutes(br);
+        Utilities.CreateRoutes(br,routes);
         br.close();
         fr.close();
         fr=new FileReader("BusLinesNew.txt");
         br=new BufferedReader(fr);
-        CreateBusLines(br);
+        Utilities.CreateBusLines(br,routes,busLines);
         br.close();
         fr.close();
-        CreateBusPositions(br);
+        Utilities.CreateBusPositions(br,busLines,busPositions);
         br.close();
         fr.close();
         ArrayList<Thread> threads = new ArrayList<>();
