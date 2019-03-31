@@ -28,5 +28,4 @@ class Publisher{
         fr.close();
         new Utilities().openServer(16409);
     }
-
 }
