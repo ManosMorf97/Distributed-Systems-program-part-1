@@ -1,9 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-//hash buslineid
-//topic or key LineId
-//value busPosition
+
 
 public  class BrokerA {
     private static ArrayList<BusLine> busLines;
@@ -11,29 +9,8 @@ public  class BrokerA {
     private static ArrayList<BusPosition> busPositions;
     private static ArrayList<Route> routes;
 
-    static String MD5(String md5) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100), 1, 3);
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException ignored) {
-        }
-        return null;
-    }
 
-    public static void ActivateResponsibility() {
-        for (BusLine b : busLines) {
-            try {
-                if ((MD5(b.getLineId())).compareTo(MD5(InetAddress.getLocalHost().toString() + "4321")) < 0) {
-                    responsibleLines.add(b);
-                }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+
 
     public static class ComunicationWithConsumerThread implements Runnable {
         private Socket socket;
@@ -125,21 +102,19 @@ public  class BrokerA {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Socket clientSocket = new Socket("localhost", 5000);
-        Object recieved=null;
         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
         while (true) {
             try {
-
-                recieved = in.readObject();
-                routes=(ArrayList<Route>) recieved;
-                
+                routes = (ArrayList<Route>) in.readObject();
+                busPositions = (ArrayList<BusPosition>) in.readObject();
+                busLines = (ArrayList<BusLine>) in.readObject();
+                String stop = (String) in.readObject();
+                if (stop.equals("Stop")) break;
             } catch (EOFException ignored) {
 
 
             }
-            System.out.println("RECEIVED:" + recieved);
 
-            if (recieved != null && recieved.toString().equals("Stop")) break;
             //routes =(ArrayList<Route>) in.readObject();
             //busPositions=(ArrayList<BusPosition>)in.readObject();
             //busLines=(ArrayList<BusLine>)in.readObject();

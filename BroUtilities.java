@@ -1,15 +1,16 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 class BroUtilities {
 
-    private void ActivateResponsibility(){
-        for(BusLine  b:Publisher.busLines){
+    public static void ActivateResponsibility(ArrayList<BusLine> busLines) {
+        for (BusLine b : busLines) {
             try {
-                if ((BroUtilities.MD5(b.getLineId())).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + "4321")) < 0) {
+                if ((MD5(b.getLineId())).compareTo(MD5(InetAddress.getLocalHost().toString() + "4321")) < 0) {
                     BrokerA.responsibleLines.add(b);
                 }
-            }catch(UnknownHostException e){
+            } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
         }
