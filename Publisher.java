@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 class Publisher{
 
-    private static ArrayList<BusLine> busLines = new ArrayList<>();
+    static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<Route> routes = new ArrayList<>();
 
