@@ -21,12 +21,12 @@ class Publisher{
         Utilities.CreateBusLines(br,routes,busLines);
         br.close();
         fr.close();
-        Utilities.CreateBusPositions(br,busLines,busPositions);
+        fr=new FileReader("BusPositionsNew.txt");
+        br=new BufferedReader(fr);
+        Utilities.CreateBusPositions(br);
         br.close();
         fr.close();
         new Utilities().openServer(16409);
     }
-
-
 
 }

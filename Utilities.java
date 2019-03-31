@@ -15,6 +15,7 @@ class Utilities {
     public static  ArrayList<BusLine> getResponsibleLines(){
         return responsibleLines;
     }
+
     public  void ActivateResponsibility(){
         for(BusLine  b:busLines){
             try {
@@ -38,7 +39,7 @@ class Utilities {
     }
 
 
-    private static void CreateBusPositions(BufferedReader br)throws IOException {
+    static void CreateBusPositions(BufferedReader br)throws IOException {
         String line=br.readLine();
         while(line!=null){
             String [] characteristics=new String[5];
@@ -64,7 +65,7 @@ class Utilities {
     }
 
 
-    private static void CreateRoutes(BufferedReader br, ArrayList<Route> routes) throws IOException {
+    static void CreateRoutes(BufferedReader br, ArrayList<Route> routes) throws IOException {
         String line = "";
         while(line != null){
             String [] characteristics = new String[3];
@@ -80,7 +81,7 @@ class Utilities {
             line = br.readLine();
         }
     }
-    private static void CreateBusLines(BufferedReader br, ArrayList<Route> routes, ArrayList<BusLine> busLines) throws  IOException{
+    static void CreateBusLines(BufferedReader br, ArrayList<Route> routes, ArrayList<BusLine> busLines) throws  IOException{
         String line="";
         while(line!=null){
             String [] characteristics=new String[2];
@@ -99,22 +100,7 @@ class Utilities {
         }
     }
 
-    void openServer(int port) throws IOException {
-        FileReader fr = new FileReader("RouteCodesNew.txt");
-        BufferedReader br = new BufferedReader(fr);
-        CreateRoutes(br,routes);
-        br.close();
-        fr.close();
-        fr = new FileReader("BusLinesNew.txt");
-        br = new BufferedReader(fr);
-        CreateBusLines(br,routes,busLines);
-        br.close();
-        fr.close();
-        fr=new FileReader("BusPositionsNew.txt");
-        br=new BufferedReader(fr);
-        CreateBusPositions(br);
-        br.close();
-        fr.close();
+    void openServer(int port){
         ActivateResponsibility();
         ArrayList<Thread> threads = new ArrayList<>();
         ServerSocket providerSocket;
@@ -140,7 +126,7 @@ class Utilities {
 */
 
                 for (int i = 0; i < 1; i++) {
-                    connection = new Socket(InetAddress.getByName("127.0.0.1"),4321);
+                    connection = new Socket(InetAddress.getByName("127.0.0.1"),port);
                     BrokerA.ComunicationWithConsumerThread CWCT = new BrokerA.ComunicationWithConsumerThread(connection);
                     Thread t1 = new Thread(CWCT);
                     t1.start();
