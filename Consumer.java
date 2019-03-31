@@ -6,18 +6,18 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Consumer {
-    private static String busline;
-    private static Socket socket;
+
     private static int change(int x) {
         if (x == 5056) x = 5057;
         else x = 5056;
         return x;
     }
-    public static void stage1()throws Exception {
+
+    private static void stage1()throws Exception {
         int port = 4321;
         ServerSocket serverSocket = new ServerSocket(port);
         while (true) {
-            socket = serverSocket.accept();
+            Socket socket = serverSocket.accept();
             InputStream is = socket.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
@@ -28,7 +28,7 @@ public class Consumer {
             }
             System.out.println("Type the buslines you re interessted in.When you done type : bye \n");
             Scanner input=new Scanner(System.in);
-            busline=input.nextLine()+"\n";
+            String busline = input.nextLine() + "\n";
             OutputStream os = socket.getOutputStream();
             OutputStreamWriter osw = new OutputStreamWriter(os);
             BufferedWriter bw = new BufferedWriter(osw);
