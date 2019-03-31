@@ -1,4 +1,6 @@
-class BusLine {
+import java.io.Serializable;
+
+class BusLine implements Serializable {
 
     private String LineCode;
     private String LineId;

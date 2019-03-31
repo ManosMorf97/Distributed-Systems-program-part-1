@@ -1,4 +1,6 @@
-public class Route {
+import java.io.Serializable;
+
+public class Route implements Serializable {
     private String routedescription;
     private String LineCode;
     private String RouteCode;

@@ -1,4 +1,6 @@
-public class BusPosition {
+import java.io.Serializable;
+
+public class BusPosition implements Serializable {
     private String LineCode;
     private String RouteCode;
     private String vehicleId;

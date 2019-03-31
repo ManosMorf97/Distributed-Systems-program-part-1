@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public  class BrokerA{
    private static ArrayList<BusLine> busLines = new ArrayList<>();
-    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
+    static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static ArrayList<BusPosition> datafrompublisher = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<Route> routes = new ArrayList<>();
@@ -138,8 +138,23 @@ public  class BrokerA{
 
             }
     }
-    public static void main(String[] args) throws IOException{
-        //new BroUtilities().openServer(4321);
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        Object FromServer = null;
+        ArrayList test;
+        Socket clientSocket = new Socket("localhost", 5000);
+
+        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+
+        while(true) {
+            try{
+                FromServer = in.readObject();
+            }catch (EOFException ignored){
+
+            }
+
+            System.out.println("RECEIVED:" + FromServer);
+            if (FromServer != null && FromServer.toString().equals("Stop")) break;
+        }
     }
 }
 
