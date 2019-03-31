@@ -5,104 +5,87 @@ import java.util.ArrayList;
 //topic or key LineId
 //value busPosition
 
-public  class BrokerA{
-   private static ArrayList<BusLine> busLines = new ArrayList<>();
+public  class BrokerA {
+    private static ArrayList<BusLine> busLines;
     static ArrayList<BusLine> responsibleLines = new ArrayList<>();
-    private static ArrayList<BusPosition> datafrompublisher = new ArrayList<>();
-    private static ArrayList<BusPosition> busPositions = new ArrayList<>();
-    private static ArrayList<Route> routes = new ArrayList<>();
+    private static ArrayList<BusPosition> busPositions;
+    private static ArrayList<Route> routes;
 
+    static String MD5(String md5) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(md5.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100), 1, 3);
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException ignored) {
+        }
+        return null;
+    }
 
-    public static class ComunicationWithPublisherThread implements Runnable {
+    public static void ActivateResponsibility() {
+        for (BusLine b : busLines) {
+            try {
+                if ((MD5(b.getLineId())).compareTo(MD5(InetAddress.getLocalHost().toString() + "4321")) < 0) {
+                    responsibleLines.add(b);
+                }
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static class ComunicationWithConsumerThread implements Runnable {
         private Socket socket;
 
-        ComunicationWithPublisherThread (Socket socket) {
+        ComunicationWithConsumerThread(Socket socket) {
             this.socket = socket;
         }
 
         public void run() {
-
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                for(BusLine  b:busLines){
-                    if(Integer.parseInt(BroUtilities.MD5(b.getLineId()))<Integer.parseInt(BroUtilities.MD5(socket.getInetAddress().toString() + "4321"))){
-                        responsibleLines.add(b);
-                    }
-                }
-                out.writeObject("I am responsible for these keys:\n");
-                for (BusLine  rl: busLines) {
-                    out.writeObject(rl.getRouteDescription()+"\n");
-                    out.writeObject(rl.getLineId()+"\n\n");
-                }
-                String message = (String) in.readObject();//sypose  that the pub send the data in this way
-                System.out.println(message);
-                while (!message.equals("bye")) {
-                   String lineId = (String) in.readObject();
-                   int x=(Integer)in.readObject();//check me
-                    int y=(Integer)in.readObject();//check me
-                    for(BusPosition bp: busPositions){
-                       if(bp.getLatitude() == y&&bp.getLongitude() == x){//we will see that after publisher is done
-                            datafrompublisher.add(bp);
+            while (true) {
+                try {
+                    OutputStream os = socket.getOutputStream();
+                    OutputStreamWriter osw = new OutputStreamWriter(os);
+                    BufferedWriter bw = new BufferedWriter(osw);
+                    bw.write("I am broker A and I am responsible for these keys:\n");
+                    bw.flush();
+                    //String message = (String) in.readObject();
+                    for (BusLine rl : responsibleLines) {
+                        for (Route r2 : routes) {
+                            if (rl.getLineCode().equals(r2.getLineCode()))
+                                bw.write(rl.getRouteDescription() + "\n");
+                            bw.flush();
+                            bw.write(rl.getLineId() + "\n\n");
+                            bw.flush();
                         }
                     }
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    public static class ComunicationWithConsumerThread implements  Runnable{
-        private Socket socket;
-        ComunicationWithConsumerThread(Socket socket){
-            this.socket=socket;
-        }
-        public void run(){
-
-            try {
-                OutputStream os = socket.getOutputStream();
-                OutputStreamWriter osw = new OutputStreamWriter(os);
-                BufferedWriter bw = new BufferedWriter(osw);
-                bw.write("I am broker A and I am responsible for these keys:\n");
-                bw.flush();
-                //String message = (String) in.readObject();
-                for (BusLine rl : responsibleLines) {
-                    for (Route r2 : routes) {
-                        if(rl.getLineCode().equals(r2.getLineCode()))
-                        bw.write(rl.getRouteDescription() + "\n");
-                        bw.flush();
-                        bw.write(rl.getLineId() + "\n\n");
-                        bw.flush();
-                    }
-                }
-                //the other brokers
-                bw.write("Broker B is responsible for these keys :\n");
-                bw.flush();
-               // ArrayList<BusLine> bB = BrokerB.getResponsibleLines();
-                //for (BusLine rl : bB) {
-                  //  bw.write(rl.getRoute().getRouteDescription() + "\n");
+                    //the other brokers
+                    bw.write("Broker B is responsible for these keys :\n");
+                    bw.flush();
+                    // ArrayList<BusLine> bB = BrokerB.getResponsibleLines();
+                    //for (BusLine rl : bB) {
+                    //  bw.write(rl.getRoute().getRouteDescription() + "\n");
                     //bw.flush();
                     //bw.write(rl.getLineId() + "\n\n");
                     //bw.flush();
-                //}
-                bw.write("Broker C is responsible for these keys :\n");
-                bw.flush();
-                //ArrayList<BusLine> bC = BrokerC.getResponsibleLines();
-                //for (BusLine rl : bC) {
-                  //  bw.write(rl.getRoute().getRouteDescription() + "\n");
+                    //}
+                    bw.write("Broker C is responsible for these keys :\n");
+                    bw.flush();
+                    //ArrayList<BusLine> bC = BrokerC.getResponsibleLines();
+                    //for (BusLine rl : bC) {
+                    //  bw.write(rl.getRoute().getRouteDescription() + "\n");
                     //bw.flush();
                     //bw.write(rl.getLineId() + "\n\n");
                     //bw.flush();
-               // }
-                bw.write("Done" + "\n");
-                bw.flush();
-                //
-                //Get the return message from the server
-                InputStream is = socket.getInputStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
+                    // }
+                    bw.write("Done" + "\n");
+                    bw.flush();
+                    //
+                    //Get the return message from the server
+                    InputStream is = socket.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    BufferedReader br = new BufferedReader(isr);
                     String lineId = br.readLine();
                     System.out.println(lineId.length());
                     bw.write("My responsibilities :\n");
@@ -110,50 +93,70 @@ public  class BrokerA{
                     while (!lineId.equals("bye")) {
                         System.out.println(responsibleLines.size());
                         //only for my responsibility
-                            for(BusLine bl: responsibleLines) {
-                                if(bl.getLineId().equals((lineId))){
-                                    String linecode=bl.getLineCode();
-                                    for(BusPosition bp: busPositions){
-                                        if(bp.getLineCode().equals(linecode)){
-                                            bw.write("Bus from line " + lineId + "\n");
-                                            bw.flush();
-                                            bw.write("Longitude " + bp.getLongitude() + " Latitude " + bp.getLatitude() + "\n");
-                                            bw.flush();
-                                        }
+                        for (BusLine bl : responsibleLines) {
+                            if (bl.getLineId().equals((lineId))) {
+                                String linecode = bl.getLineCode();
+                                for (BusPosition bp : busPositions) {
+                                    if (bp.getLineCode().equals(linecode)) {
+                                        bw.write("Bus from line " + lineId + "\n");
+                                        bw.flush();
+                                        bw.write("Longitude " + bp.getLongitude() + " Latitude " + bp.getLatitude() + " Time " + bp.getTime() + "\n");
+                                        bw.flush();
                                     }
                                 }
-
-
-
                             }
 
+
+                        }
+                        bw.write("next\n");
+                        bw.flush();
                         lineId = br.readLine();
-                            System.out.println("Get");
+                        System.out.println("Get");
                     }
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-
             }
+        }
+
     }
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        Object FromServer = null;
-        ArrayList test;
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Socket clientSocket = new Socket("localhost", 5000);
-
+        Object recieved=null;
         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+        while (true) {
+            try {
 
-        while(true) {
-            try{
-                FromServer = in.readObject();
-            }catch (EOFException ignored){
+                recieved = in.readObject();
+                routes=(ArrayList<Route>) recieved;
+                
+            } catch (EOFException ignored) {
+
 
             }
+            System.out.println("RECEIVED:" + recieved);
 
-            System.out.println("RECEIVED:" + FromServer);
-            if (FromServer != null && FromServer.toString().equals("Stop")) break;
+            if (recieved != null && recieved.toString().equals("Stop")) break;
+            //routes =(ArrayList<Route>) in.readObject();
+            //busPositions=(ArrayList<BusPosition>)in.readObject();
+            //busLines=(ArrayList<BusLine>)in.readObject();
+
+            //in.readObject();
+            //ActivateResponsibility();
+
+            //clientSocket.close();
+            //comuniction with client
+
+            //ServerSocket Server = new ServerSocket(4321);
+           // Socket connected = Server.accept();
+           // ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(connected);
+           // Thread t = new Thread(cwct);
+           // t.start();
+           // t.join();
+           // System.out.println("TCPServer Waiting for client on port 4321");
         }
     }
 }
