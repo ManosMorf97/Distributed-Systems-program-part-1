@@ -21,8 +21,8 @@ class Publisher{
         Utilities.CreateBusLines(br,routes,busLines);
         br.close();
         fr.close();
-        fr=new FileReader("BusPositionsNew.txt");
-        br=new BufferedReader(fr);
+        fr = new FileReader("BusPositionsNew.txt");
+        br = new BufferedReader(fr);
         Utilities.CreateBusPositions(br,busLines,busPositions);
         br.close();
         fr.close();
