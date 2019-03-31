@@ -31,18 +31,18 @@ class Utilities {
     }
 
     static void CreateBusPositions(BufferedReader br,ArrayList<BusPosition> busPositions)throws IOException {
-        String line=br.readLine();
-        while(line!=null){
+        String line = br.readLine();
+        while(line != null){
             int pos;
             String [] characteristics = new String[6];
-            for(int i=0; i<6; i++){
+            for(int i = 0; i < 6; i++){
                 pos = line.indexOf(",");
                 if(pos < 0)pos = line.length();
                 characteristics[i] = line.substring(0, pos);
                 line = line.substring(0, pos + 1);
             }
             busPositions.add(new BusPosition(characteristics[0],characteristics[1],characteristics[2],Double.parseDouble(characteristics[3]),Double.parseDouble(characteristics[4]),characteristics[5]));
-            line=br.readLine();
+            line = br.readLine();
         }
     }
 
