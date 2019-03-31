@@ -26,7 +26,7 @@ public  class BrokerA{
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 for(BusLine  b:busLines){
-                    if(Integer.parseInt(PubUtilities.MD5(b.getLineId()))<Integer.parseInt(PubUtilities.MD5(socket.getInetAddress().toString() + "4321"))){
+                    if(Integer.parseInt(BroUtilities.MD5(b.getLineId()))<Integer.parseInt(BroUtilities.MD5(socket.getInetAddress().toString() + "4321"))){
                         responsibleLines.add(b);
                     }
                 }
@@ -139,7 +139,7 @@ public  class BrokerA{
             }
     }
     public static void main(String[] args) throws IOException{
-        new PubUtilities().openServer(4321);
+        //new BroUtilities().openServer(4321);
     }
 }
 
