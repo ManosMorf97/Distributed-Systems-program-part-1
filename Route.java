@@ -5,10 +5,10 @@ public class Route {
     private String RouteType;
 
     public Route(String  RouteCode ,String LineCode,String RouteType,String routedescription){
-        this.routedescription=routedescription;
-       this.RouteCode=RouteCode;
-       this.LineCode=LineCode;
-       this.RouteType=RouteType;
+        this.routedescription = routedescription;
+       this.RouteCode = RouteCode;
+       this.LineCode = LineCode;
+       this.RouteType = RouteType;
     }
     public String getRouteDescription(){
         return routedescription;

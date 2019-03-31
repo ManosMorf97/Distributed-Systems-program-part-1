@@ -5,30 +5,37 @@ public class BusPosition {
     private double latitude;
     private double longitude;
     private String time;
-    public BusPosition(String LineCode,String RouteCode,String vehicleId,double latitude,double longitude,String time){
-        this.LineCode=LineCode;
-        this.RouteCode=RouteCode;
-        this.latitude=latitude;
-        this.longitude=longitude;
-        this.time=time;
-        this.vehicleId=vehicleId;
+
+    BusPosition(String LineCode, String RouteCode, String vehicleId, double latitude, double longitude, String time){
+        this.LineCode = LineCode;
+        this.RouteCode = RouteCode;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.time = time;
+        this.vehicleId = vehicleId;
     }
-    public String getLineCode(){
+
+    String getLineCode(){
         return  LineCode;
     }
+
     public String getRouteCode(){
         return  RouteCode;
     }
+
     public String getVehicleId(){
         return vehicleId;
     }
+
     public String getTime(){
         return time;
     }
-    public double getLatitude(){
+
+    double getLatitude(){
         return latitude;
     }
-    public double getLongitude(){
+
+    double getLongitude(){
         return longitude;
     }
 }
