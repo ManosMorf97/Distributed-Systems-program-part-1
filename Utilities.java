@@ -7,13 +7,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 class Utilities {
-    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
 
     private void ActivateResponsibility(){
         for(BusLine  b:Publisher.busLines){
             try {
                 if ((Utilities.MD5(b.getLineId())).compareTo(Utilities.MD5(InetAddress.getLocalHost().toString() + "4321")) < 0) {
-                    responsibleLines.add(b);
+                    Publisher.responsibleLines.add(b);
                 }
             }catch(UnknownHostException e){
                 e.printStackTrace();

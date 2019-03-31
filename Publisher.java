@@ -8,7 +8,7 @@ class Publisher{
     static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<Route> routes = new ArrayList<>();
-
+    static ArrayList<BusLine> responsibleLines = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
         FileReader fr = new FileReader("RouteCodesNew.txt");
