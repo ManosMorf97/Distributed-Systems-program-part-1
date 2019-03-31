@@ -16,17 +16,8 @@ public static ArrayList<BusLine> getBusLines(){
     static ArrayList<BusLine> getResponsibleLines(){
         return  responsibleLines;
     }
-   public static void ActivateResponsibility(){
-        for(BusLine  b:busLines){
-            try {
-                if ((Utilities.MD5(b.getLineId())).compareTo(Utilities.MD5(InetAddress.getLocalHost().toString() + "4321"))<0) {
-                    responsibleLines.add(b);
-                }
-            }catch(UnknownHostException e){
-                e.printStackTrace();
-            }
-        }
-    }
+
+
     public static class ComunicationWithPublisherThread implements Runnable {
         private Socket socket;
 
