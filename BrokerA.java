@@ -97,9 +97,9 @@ public  class BrokerA{
             }catch(IOException  e){
                 e.printStackTrace();
             }
-
         }
     }
+
     public static void main(String[] args) throws IOException{
         new Utilities().openServer(5090);
     }

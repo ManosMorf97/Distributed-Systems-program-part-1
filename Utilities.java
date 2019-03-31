@@ -1,14 +1,11 @@
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
 class Utilities {
-    private static ArrayList<Route> routes = new ArrayList<>();
-    private static ArrayList<BusLine> busLines = new ArrayList<>();
-    private static ArrayList<BusPosition> busPositions = new ArrayList<>();
+
 
     static String MD5(String md5) {
         try {
@@ -22,7 +19,7 @@ class Utilities {
     }
 
 
-    private static void CreateBusPositions(BufferedReader br, ArrayList<BusLine> busLines, ArrayList<BusPosition> busPositions)throws IOException {
+    static void CreateBusPositions(BufferedReader br, ArrayList<BusLine> busLines, ArrayList<BusPosition> busPositions)throws IOException {
         String line="";
         while(line != null){
             String [] characteristics=new String[5];
@@ -47,7 +44,7 @@ class Utilities {
     }
 
 
-    private static void CreateRoutes(BufferedReader br, ArrayList<Route> routes) throws IOException {
+    static void CreateRoutes(BufferedReader br, ArrayList<Route> routes) throws IOException {
         String line = "";
         while(line != null){
             String [] characteristics = new String[3];
@@ -63,7 +60,7 @@ class Utilities {
             line = br.readLine();
         }
     }
-    private static void CreateBusLines(BufferedReader br, ArrayList<Route> routes, ArrayList<BusLine> busLines) throws  IOException{
+    static void CreateBusLines(BufferedReader br, ArrayList<Route> routes, ArrayList<BusLine> busLines) throws  IOException{
         String line="";
         while(line!=null){
             String [] characteristics=new String[2];
@@ -83,26 +80,12 @@ class Utilities {
     }
 
     void openServer(int port) throws IOException {
-        FileReader fr = new FileReader("RouteCodesNew.txt");
-        BufferedReader br = new BufferedReader(fr);
-        CreateRoutes(br,routes);
-        br.close();
-        fr.close();
-        fr = new FileReader("BusLinesNew.txt");
-        br = new BufferedReader(fr);
-        CreateBusLines(br,routes,busLines);
-        br.close();
-        fr.close();
-        CreateBusPositions(br,busLines,busPositions);
-        br.close();
-        fr.close();
         ArrayList<Thread> threads = new ArrayList<>();
         ServerSocket providerSocket;
         Socket connection ;
         providerSocket = new ServerSocket(4321);
         try {
             while(true) {
-
                 for (int i = 0; i < 10; i++) {
                     connection = providerSocket.accept();
                     BrokerA.ComunicationWithPublisherThread CWPT = new BrokerA.ComunicationWithPublisherThread(connection);

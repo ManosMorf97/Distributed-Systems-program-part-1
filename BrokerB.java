@@ -73,7 +73,7 @@ public class BrokerB {
                 }
                 //the other brokers
                 out.writeObject("Broker A is responsible for these keys :\n");
-                ArrayList<BusLine> bA=BrokerA.getResponsibleLines();
+                ArrayList<BusLine> bA = BrokerA.getResponsibleLines();
                 for(BusLine rl:bA){
                     out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");

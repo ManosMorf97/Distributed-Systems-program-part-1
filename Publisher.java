@@ -1,66 +1,32 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
 
 class Publisher{
 
-    private static HashMap<String, BusPosition> Keys;
+    private static ArrayList<BusLine> busLines = new ArrayList<>();
+    private static ArrayList<BusPosition> busPositions = new ArrayList<>();
+    private static ArrayList<Route> routes = new ArrayList<>();
 
-    private ArrayList<Publisher> registeredPublishers;
 
     public static void main(String[] args) throws IOException {
-        new Publisher().openServer();
+        FileReader fr = new FileReader("RouteCodesNew.txt");
+        BufferedReader br = new BufferedReader(fr);
+        Utilities.CreateRoutes(br,routes);
+        br.close();
+        fr.close();
+        fr = new FileReader("BusLinesNew.txt");
+        br = new BufferedReader(fr);
+        Utilities.CreateBusLines(br,routes,busLines);
+        br.close();
+        fr.close();
+        Utilities.CreateBusPositions(br,busLines,busPositions);
+        br.close();
+        fr.close();
+        new Utilities().openServer(16409);
     }
 
-    private void openServer() {
-        ServerSocket providerSocket = null; //arxikopoihsh
-        Socket connection;
-        String message = null;
-        try {
-            providerSocket = new ServerSocket(4321);
 
-            while(true) { //o server lamvanei aithmata apo client mexri na termatistei h synthikh
-
-                connection = providerSocket.accept(); //server socket
-
-                //epistrefei neo socket
-                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream()); //diauloi epikoinwnias
-                ObjectInputStream in= new ObjectInputStream(connection.getInputStream());      //etc data input stream, file input stream
-
-                out.writeObject("Connection successful!"); //mesw output stream
-                out.flush(); //steile kateutheian to mhnyma
-
-                do {
-                    try {
-                        message = (String) in.readObject(); //perimenw na parw kati typou string, casting!!
-                        System.out.println(connection.getInetAddress().getHostAddress()+">"+message); //termatizei otan lavei bye
-
-                    } catch (ClassNotFoundException classnot) {
-                        System.err.println("Data received in unknown format");
-                    }
-                } while (!message.equals("bye")); //termatizei otan lavei bye
-                in.close(); //kleinw ta streams
-                out.close();
-                connection.close(); //kleinw to socket
-            }
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } finally {
-            try {
-                Objects.requireNonNull(providerSocket).close();
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
-        }
-}
-
-    private HashMap<String,BusPosition> getKeys(){
-        return Keys;
-    }
 
 }
