@@ -10,11 +10,23 @@ public  class BrokerA{
     private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<BusPosition> datafrompublisher = new ArrayList<>();
-
+public static ArrayList<BusLine> getBusLines(){
+    return busLines;
+}
     static ArrayList<BusLine> getResponsibleLines(){
         return  responsibleLines;
     }
-
+   public static void ActivateResponsibility(){
+        for(BusLine  b:busLines){
+            try {
+                if ((Utilities.MD5(b.getLineId())).compareTo(Utilities.MD5(InetAddress.getLocalHost().toString() + "4321"))<0) {
+                    responsibleLines.add(b);
+                }
+            }catch(UnknownHostException e){
+                e.printStackTrace();
+            }
+        }
+    }
     public static class ComunicationWithPublisherThread implements Runnable {
         private Socket socket;
 
@@ -23,11 +35,15 @@ public  class BrokerA{
         }
 
         public void run() {
+
             try {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                for(BusLine  b:busLines) if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString() + "4321"))) responsibleLines.add(b);
-
+                for(BusLine  b:busLines){
+                    if(Integer.parseInt(Utilities.MD5(b.getLineId()))<Integer.parseInt(Utilities.MD5(socket.getInetAddress().toString() + "4321"))){
+                        responsibleLines.add(b);
+                    }
+                }
                 out.writeObject("I am responsible for these keys:\n");
                 for (BusLine  rl:responsibleLines) {
                     out.writeObject(rl.getRoute().getRouteDescription()+"\n");
@@ -38,12 +54,17 @@ public  class BrokerA{
                    String lineId=(String) in.readObject();
                    int x=(Integer)in.readObject();//check me
                     int y=(Integer)in.readObject();//check me
-                    for(BusPosition bp:busPositions) if(bp.getLatitude() == y&&bp.getLongitude() == x&&bp.getLongitude() == x&&bp.getBus().getLineId().equals(lineId)) datafrompublisher.add(bp);
+                    for(BusPosition bp:busPositions){
+                        if(bp.getLatitude() == y&&bp.getLongitude() == x&&bp.getLongitude() == x&&bp.getBus().getLineId().equals(lineId)){
+                            datafrompublisher.add(bp);
+                        }
+                    }
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     public static class ComunicationWithConsumerThread implements  Runnable{
@@ -58,7 +79,7 @@ public  class BrokerA{
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 out.writeObject("I am broker A and I am responsible for these keys:\n");
                 //String message = (String) in.readObject();
-                for (BusLine  rl:responsibleLines) {
+                for (BusLine  rl:Utilities.getResponsibleLines()) {
                     out.writeObject(rl.getRoute().getRouteDescription() + "\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
@@ -75,7 +96,7 @@ public  class BrokerA{
                     out.writeObject(rl.getRoute().getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
-
+                out.writeObject("Done");
                 //
                 try {
                     String lineId = (String) in.readObject();
@@ -101,7 +122,9 @@ public  class BrokerA{
     }
 
     public static void main(String[] args) throws IOException{
-        new Utilities().openServer(5090);
+        new Utilities().openServer(4321);
     }
+
+
 }
 
