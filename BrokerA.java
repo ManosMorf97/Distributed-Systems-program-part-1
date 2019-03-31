@@ -9,12 +9,9 @@ public  class BrokerA{
    private static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static ArrayList<BusPosition> datafrompublisher = new ArrayList<>();
-public static ArrayList<BusLine> getBusLines(){
-    return busLines;
-}
-    static ArrayList<BusLine> getResponsibleLines(){
-        return  responsibleLines;
-    }
+    private static ArrayList<BusPosition> busPositions = new ArrayList<>();
+    private static ArrayList<Route> routes = new ArrayList<>();
+
 
     public static class ComunicationWithPublisherThread implements Runnable {
         private Socket socket;
@@ -34,17 +31,17 @@ public static ArrayList<BusLine> getBusLines(){
                     }
                 }
                 out.writeObject("I am responsible for these keys:\n");
-                for (BusLine  rl:Utilities.getResponsibleLines()) {
+                for (BusLine  rl: busLines) {
                     out.writeObject(rl.getRouteDescription()+"\n");
                     out.writeObject(rl.getLineId()+"\n\n");
                 }
                 String message = (String) in.readObject();//sypose  that the pub send the data in this way
                 System.out.println(message);
                 while (!message.equals("bye")) {
-                   String lineId=(String) in.readObject();
+                   String lineId = (String) in.readObject();
                    int x=(Integer)in.readObject();//check me
                     int y=(Integer)in.readObject();//check me
-                    for(BusPosition bp:Utilities.getBusPositions()){
+                    for(BusPosition bp: busPositions){
                        if(bp.getLatitude() == y&&bp.getLongitude() == x){//we will see that after publisher is done
                             datafrompublisher.add(bp);
                         }
@@ -59,7 +56,6 @@ public static ArrayList<BusLine> getBusLines(){
 
     public static class ComunicationWithConsumerThread implements  Runnable{
         private Socket socket;
-        private ServerSocket providerSocket;
         ComunicationWithConsumerThread(Socket socket){
             this.socket=socket;
         }
@@ -72,9 +68,9 @@ public static ArrayList<BusLine> getBusLines(){
                 bw.write("I am broker A and I am responsible for these keys:\n");
                 bw.flush();
                 //String message = (String) in.readObject();
-                for (BusLine rl : Utilities.getResponsibleLines()) {
-                    for (Route r2 : Utilities.getRoutes()) {
-                        if(rl.getLineCode()==r2.getLineCode())
+                for (BusLine rl : responsibleLines) {
+                    for (Route r2 : routes) {
+                        if(rl.getLineCode().equals(r2.getLineCode()))
                         bw.write(rl.getRouteDescription() + "\n");
                         bw.flush();
                         bw.write(rl.getLineId() + "\n\n");
@@ -112,12 +108,12 @@ public static ArrayList<BusLine> getBusLines(){
                     bw.write("My responsibilities :\n");
                     bw.flush();
                     while (!lineId.equals("bye")) {
-                        System.out.println(Utilities.getResponsibleLines().size());
+                        System.out.println(responsibleLines.size());
                         //only for my responsibility
-                            for(BusLine bl:Utilities.getResponsibleLines()) {
+                            for(BusLine bl: responsibleLines) {
                                 if(bl.getLineId().equals((lineId))){
                                     String linecode=bl.getLineCode();
-                                    for(BusPosition bp:Utilities.getBusPositions()){
+                                    for(BusPosition bp: busPositions){
                                         if(bp.getLineCode().equals(linecode)){
                                             bw.write("Bus from line " + lineId + "\n");
                                             bw.flush();
@@ -145,7 +141,5 @@ public static ArrayList<BusLine> getBusLines(){
     public static void main(String[] args) throws IOException{
         new Utilities().openServer(4321);
     }
-
-
 }
 

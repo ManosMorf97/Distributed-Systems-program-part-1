@@ -18,12 +18,12 @@ class Publisher{
         fr.close();
         fr = new FileReader("BusLinesNew.txt");
         br = new BufferedReader(fr);
-        Utilities.CreateBusLines(br,routes,busLines);
+        Utilities.CreateBusLines(br,busLines);
         br.close();
         fr.close();
         fr = new FileReader("BusPositionsNew.txt");
         br = new BufferedReader(fr);
-        Utilities.CreateBusPositions(br,busLines,busPositions);
+        Utilities.CreateBusPositions(br,busPositions);
         br.close();
         fr.close();
         new Utilities().openServer(16409);
