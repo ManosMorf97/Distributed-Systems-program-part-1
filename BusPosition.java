@@ -4,14 +4,14 @@ public class BusPosition {
     private double latitude;
     private double longitude;
     private String time;
-    public BusPosition(BusLine bus,String vehicleId,double latitude,double longitude,String time){
+    BusPosition(BusLine bus, String vehicleId, double latitude, double longitude, String time){
         this.bus=bus;
         this.latitude=latitude;
         this.longitude=longitude;
         this.time=time;
         this.vehicleId=vehicleId;
     }
-    public BusLine getBus(){
+    BusLine getBus(){
         return bus;
     }
     public String getVehicleId(){
@@ -20,10 +20,10 @@ public class BusPosition {
     public String getTime(){
         return time;
     }
-    public double getLatitude(){
+    double getLatitude(){
         return latitude;
     }
-    public double getLongitude(){
+    double getLongitude(){
         return longitude;
     }
 }

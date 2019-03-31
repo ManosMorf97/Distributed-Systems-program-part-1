@@ -1,21 +1,17 @@
-import java.util.ArrayList;
-
-public class BusLine {
+class BusLine {
 
     private Route route;
     private String LineId;
-    public BusLine(Route route,String LineId){
+    BusLine(Route route,String LineId){
         this.route=route;
         this.LineId=LineId;
     }
-    public Route getRoute(){
+    Route getRoute(){
         return route;
     }
-    public String getLineId(){
+    String getLineId(){
       return  LineId;
 
    }
-
-
 }
 
