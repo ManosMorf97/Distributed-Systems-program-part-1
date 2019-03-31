@@ -23,7 +23,7 @@ class Publisher{
         fr.close();
         fr=new FileReader("BusPositionsNew.txt");
         br=new BufferedReader(fr);
-        Utilities.CreateBusPositions(br);
+        Utilities.CreateBusPositions(br,busLines,busPositions);
         br.close();
         fr.close();
         new Utilities().openServer(16409);
