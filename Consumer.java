@@ -15,41 +15,36 @@ public class Consumer {
 
     private static void stage1()throws Exception {
         int port = 4321;
-        ServerSocket serverSocket = new ServerSocket(port);
-        while (true) {
-            Socket socket = serverSocket.accept();
-            InputStream is = socket.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line = br.readLine();
+        String FromServer;
+        String ToServer;
+
+        Socket clientSocket = new Socket("localhost", port);
+
+        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(
+                System.in));
+
+        PrintWriter outToServer = new PrintWriter(
+                clientSocket.getOutputStream(), true);
+
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(
+                clientSocket.getInputStream()));
+        while(true){
+            String line = inFromServer.readLine();
             while (!line.equals("Done")) {
                 System.out.println(line);
-                line = br.readLine();
-            }
-            System.out.println("Type the buslines you re interessted in.When you done type : bye \n");
-            Scanner input=new Scanner(System.in);
-            String busline = input.nextLine() + "\n";
-            OutputStream os = socket.getOutputStream();
-            OutputStreamWriter osw = new OutputStreamWriter(os);
-            BufferedWriter bw = new BufferedWriter(osw);
-            while (!busline.equals("bye\n")) {
-                //stage2();
-                bw.write(busline);
-                bw.flush();
-                String answer = br.readLine();
+                line = inFromServer.readLine();
+                System.out.println("Type the buslines you re interessted in.When you done type : bye \n");
+                Scanner input=new Scanner(System.in);
+                String busline = input.nextLine() + "\n";
+                outToServer.println(busline);
+                String answer = inFromServer.readLine();
                 while (!answer.equals("next")) {
                     System.out.println(answer);
-                    answer = br.readLine();
+                    answer = inFromServer.readLine();
                 }
-                // out.println(busline);
-                busline = input.nextLine()+"\n";
+                System.out.println("Do you want to connect with other broker? 0 for no 1 for yes");
 
             }
-            System.out.println("Do you want to connect with other broker? 0 for no 1 for yes");
-            Scanner input2 = new Scanner(System.in);
-            if (input2.nextInt() == 1)
-                port = change(port);
-
         }
     }
     public static void main(String[] args) throws Exception {

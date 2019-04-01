@@ -23,11 +23,10 @@ class Publisher{
             }
         }
 
-        ArrayList<Bus> bus2 = bus.get("040");
 
-        ServerSocket Server = new ServerSocket(5001);
+        ServerSocket Server = new ServerSocket(5000);
 
-        System.out.println("TCPServer Waiting for client on port 5001");
+        System.out.println("TCPServer Waiting for client on port 5000");
 
         while (true) {
             Socket connected = Server.accept();
