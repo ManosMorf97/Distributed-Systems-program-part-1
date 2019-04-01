@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 class Publisher{
 
@@ -14,6 +15,15 @@ class Publisher{
 
     public static void main(String[] args) throws IOException, ParseException {
         makeMaps();
+
+        for (Map.Entry<String, ArrayList<Bus>> lineId : bus.entrySet()) {
+            ArrayList<Bus> bus1 = lineId.getValue();
+            for(int i = 0;i < bus1.size();i++){
+                System.out.println(bus1.get(i).getBusLine().getDescription());
+            }
+        }
+
+        ArrayList<Bus> bus2 = bus.get("040");
 
         ServerSocket Server = new ServerSocket(5001);
 

@@ -2,16 +2,12 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public  class BrokerA {
-    private static ArrayList<BusLine> busLines;
-    static ArrayList<BusLine> responsibleLines = new ArrayList<>();
-    private static ArrayList<BusPosition> busPositions;
-    private static ArrayList<Route> routes;
-    private static HashMap<Integer,ArrayList<Bus>>  bus = new HashMap<>();
-
-
+    static HashMap<String,ArrayList<Bus>> responsibleLines = new HashMap<>();
+    private static HashMap<String,ArrayList<Bus>>  bus = new HashMap<>();
 
 
     public static class ComunicationWithConsumerThread implements Runnable {
@@ -24,21 +20,24 @@ public  class BrokerA {
         public void run() {
             while (true) {
                 try {
-                    bus.keySet();
                     OutputStream os = socket.getOutputStream();
                     OutputStreamWriter osw = new OutputStreamWriter(os);
                     BufferedWriter bw = new BufferedWriter(osw);
                     bw.write("I am broker A and I am responsible for these keys:\n");
                     bw.flush();
                     //String message = (String) in.readObject();
-                    for (BusLine rl : responsibleLines) {
-                        for (Route r2 : routes) {
-                            if (rl.getLineCode().equals(r2.getLineCode()))
-                                bw.write(rl.getDescription() + "\n");
-                            bw.flush();
-                            bw.write(rl.getLineId() + "\n\n");
-                            bw.flush();
-                        }
+//                    for (BusLine rl : responsibleLines) {
+//                        for (Route r2 : ) {
+//                            if (rl.getLineCode().equals(r2.getLineCode()))
+//                                bw.write(rl.getDescription() + "\n");
+//                            bw.flush();
+//                            bw.write(rl.getLineId() + "\n\n");
+//                            bw.flush();
+//                        }
+//                    }
+
+                    for (Map.Entry<String, ArrayList<Bus>> lineId : bus.entrySet()) {
+                        ArrayList<Bus> bus1 = lineId.getValue();
                     }
                     //the other brokers
                     bw.write("Broker B is responsible for these keys :\n");
@@ -73,66 +72,64 @@ public  class BrokerA {
                     while (!lineId.equals("bye")) {
                         System.out.println(responsibleLines.size());
                         //only for my responsibility
-                        for (BusLine bl : responsibleLines) {
-                            if (bl.getLineId().equals((lineId))) {
-                                String linecode = bl.getLineCode();
-                                for (BusPosition bp : busPositions) {
-                                    if (bp.getLineCode().equals(linecode)) {
-                                        bw.write("Bus from line " + lineId + "\n");
-                                        bw.flush();
-                                        bw.write("Longitude " + bp.getLongitude() + " Latitude " + bp.getLatitude() + " Time " + bp.getTime() + "\n");
-                                        bw.flush();
-                                    }
-                                }
-                            }
+//                        for (BusLine bl : responsibleLines) {
+//                            if (bl.getLineId().equals((lineId))) {
+//                                String linecode = bl.getLineCode();
+//                                for (BusPosition bp : ) {
+//                                    if (bp.getLineCode().equals(linecode)) {
+//                                        bw.write("Bus from line " + lineId + "\n");
+//                                        bw.flush();
+//                                        bw.write("Longitude " + bp.getLongitude() + " Latitude " + bp.getLatitude() + " Time " + bp.getTime() + "\n");
+//                                        bw.flush();
+//                                    }
+//                                }
+//                            }
+//
 
-
-                        }
-                        bw.write("next\n");
-                        bw.flush();
-                        lineId = br.readLine();
-                        System.out.println("Get");
                     }
-
+                    bw.write("next\n");
+                    bw.flush();
+                    lineId = br.readLine();
+                    System.out.println("Get");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
+
         }
 
-    }
+        public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+            Socket clientSocket = new Socket("localhost", 5001);
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+            while (true) {
+                try {
+                    bus = (HashMap<String, ArrayList<Bus>>) in.readObject();
+                    String stop = (String) in.readObject();
+                    BroUtilities.ActivateResponsibility(bus, 4321);
+                    if (stop.equals("Stop")) break;
+                } catch (EOFException ignored) {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Socket clientSocket = new Socket("localhost", 5001);
-        ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-        while (true) {
-            try {
-                bus = (HashMap<Integer,ArrayList<Bus>>) in.readObject();
-                String stop = (String) in.readObject();
-                if (stop.equals("Stop")) break;
-            } catch (EOFException ignored) {
+
+                }
 
 
+
+                //in.readObject();
+
+
+
+                System.out.println("sd");
+                //clientSocket.close();
+                //comuniction with client
+
+                //ServerSocket Server = new ServerSocket(4321);
+                // Socket connected = Server.accept();
+                // ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(connected);
+                // Thread t = new Thread(cwct);
+                // t.start();
+                // t.join();
+                // System.out.println("TCPServer Waiting for client on port 4321");
             }
-
-            //routes =(ArrayList<Route>) in.readObject();
-            //busPositions=(ArrayList<BusPosition>)in.readObject();
-            //busLines=(ArrayList<BusLine>)in.readObject();
-
-            //in.readObject();
-            //ActivateResponsibility();
-
-            //clientSocket.close();
-            //comuniction with client
-
-            //ServerSocket Server = new ServerSocket(4321);
-           // Socket connected = Server.accept();
-           // ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(connected);
-           // Thread t = new Thread(cwct);
-           // t.start();
-           // t.join();
-           // System.out.println("TCPServer Waiting for client on port 4321");
         }
     }
 }
