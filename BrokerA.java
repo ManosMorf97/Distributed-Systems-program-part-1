@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public  class BrokerA {
@@ -8,6 +9,7 @@ public  class BrokerA {
     static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions;
     private static ArrayList<Route> routes;
+    private static HashMap<Integer,Bus> bus = new HashMap<>();
 
 
 
@@ -101,13 +103,11 @@ public  class BrokerA {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Socket clientSocket = new Socket("localhost", 5000);
+        Socket clientSocket = new Socket("localhost", 5001);
         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
         while (true) {
             try {
-                routes = (ArrayList<Route>) in.readObject();
-                busPositions = (ArrayList<BusPosition>) in.readObject();
-                busLines = (ArrayList<BusLine>) in.readObject();
+                bus = (HashMap<Integer, Bus>) in.readObject();
                 String stop = (String) in.readObject();
                 if (stop.equals("Stop")) break;
             } catch (EOFException ignored) {

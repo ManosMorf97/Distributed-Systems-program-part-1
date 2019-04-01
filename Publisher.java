@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 class Publisher{
@@ -16,7 +17,7 @@ class Publisher{
     public static void main(String[] args) throws IOException, ParseException {
         makeMaps();
 
-        ServerSocket Server = new ServerSocket(5000);
+        ServerSocket Server = new ServerSocket(5001);
 
         System.out.println("TCPServer Waiting for client on port 5000");
 
@@ -25,13 +26,9 @@ class Publisher{
             System.out.println(" THE CLIENT" + " " + connected.getInetAddress() + ":" + connected.getPort() + " IS CONNECTED ");
 
             ObjectOutputStream out = new ObjectOutputStream(connected.getOutputStream());
-
-            out.writeObject(routes);
-            out.writeObject(busPositions);
-            out.writeObject(busLines);
+            out.writeObject(bus);
             out.writeObject("Stop");
             connected.close();
-            break;
         }
     }
 
@@ -39,7 +36,13 @@ class Publisher{
         PubUtilities.CreateRoutes(routes);
         PubUtilities.CreateBusLines(busLines);
         PubUtilities.CreateBusPositions(busPositions);
-
-
+        int i = 0;
+        for(BusLine busLine:busLines){
+            for(BusPosition busPosition: busPositions){
+                for(Route route: routes){
+                    if(busLine.getLineCode().equals(busPosition.getLineCode()) && busPosition.getRouteCode().equals(route.getRouteCode())) bus.put(i++,new Bus(busLine,busPosition,route));
+                }
+            }
+        }
     }
 }
