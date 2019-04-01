@@ -9,7 +9,7 @@ public  class BrokerA {
     static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions;
     private static ArrayList<Route> routes;
-    private static HashMap<Integer,Bus> bus = new HashMap<>();
+    private static HashMap<Integer,ArrayList<Bus>>  bus = new HashMap<>();
 
 
 
@@ -108,7 +108,7 @@ public  class BrokerA {
         ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
         while (true) {
             try {
-                bus = (HashMap<Integer, Bus>) in.readObject();
+                bus = (HashMap<Integer,ArrayList<Bus>>) in.readObject();
                 String stop = (String) in.readObject();
                 if (stop.equals("Stop")) break;
             } catch (EOFException ignored) {

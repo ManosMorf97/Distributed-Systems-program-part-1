@@ -23,7 +23,7 @@ class PubUtilities {
             String string = characteristics[5];
             DateFormat format = new SimpleDateFormat("MMM  d yyyy HH:mm:ss:SSSa", Locale.ENGLISH);
             Date date = format.parse(string);
-            busPositions.add(new BusPosition(Integer.parseInt(characteristics[0].trim()),Integer.parseInt(characteristics[1].trim()),Integer.parseInt(characteristics[2].trim()),Double.parseDouble(characteristics[3].trim()),Double.parseDouble(characteristics[4].trim()), date));
+            busPositions.add(new BusPosition(characteristics[0].trim(),Integer.parseInt(characteristics[1].trim()),Integer.parseInt(characteristics[2].trim()),Double.parseDouble(characteristics[3].trim()),Double.parseDouble(characteristics[4].trim()), date));
             line = in.readLine();
         }
         in.close();
@@ -55,7 +55,7 @@ class PubUtilities {
                 characteristics[i] = word;
                 i++;
             }
-            busLines.add(new BusLine(Integer.parseInt(characteristics[0].trim()),Integer.parseInt(characteristics[1].trim()),characteristics[2].trim()));
+            busLines.add(new BusLine(Integer.parseInt(characteristics[0].trim()),characteristics[1].trim(),characteristics[2].trim()));
             line = in.readLine();
         }
         in.close();

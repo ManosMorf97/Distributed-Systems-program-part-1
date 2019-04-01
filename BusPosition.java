@@ -2,14 +2,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class BusPosition implements Serializable {
-    private int LineCode;
+    private String LineCode;
     private int RouteCode;
     private int vehicleId;
     private double latitude;
     private double longitude;
     private Date time;
 
-    BusPosition(int LineCode, int RouteCode, int vehicleId, double latitude, double longitude, Date time){
+    BusPosition(String LineCode, int RouteCode, int vehicleId, double latitude, double longitude, Date time){
         this.LineCode = LineCode;
         this.RouteCode = RouteCode;
         this.latitude = latitude;
@@ -19,7 +19,7 @@ public class BusPosition implements Serializable {
     }
 
     String getLineCode(){
-        return  Integer.toString(LineCode);
+        return  LineCode;
     }
 
     public String getRouteCode(){

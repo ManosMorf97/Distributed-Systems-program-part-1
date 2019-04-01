@@ -10,15 +10,14 @@ class Publisher{
     private static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<Route> routes = new ArrayList<>();
-    private static HashMap<Integer,ArrayList<Bus>> bus = new HashMap<>();
-    private static ArrayList<Bus> test = new ArrayList<>();
+    private static HashMap<String,ArrayList<Bus>> bus = new HashMap<>();
 
     public static void main(String[] args) throws IOException, ParseException {
         makeMaps();
 
         ServerSocket Server = new ServerSocket(5001);
 
-        System.out.println("TCPServer Waiting for client on port 5000");
+        System.out.println("TCPServer Waiting for client on port 5001");
 
         while (true) {
             Socket connected = Server.accept();
@@ -35,15 +34,14 @@ class Publisher{
         PubUtilities.CreateRoutes(routes);
         PubUtilities.CreateBusLines(busLines);
         PubUtilities.CreateBusPositions(busPositions);
-        for(BusLine busLine:busLines){
-            for(BusPosition busPosition: busPositions){
-                for(Route route: routes){
-                    if(busLine.getLineCode().equals(busPosition.getLineCode()) && busPosition.getRouteCode().equals(route.getRouteCode())) {
-                        test.add(new Bus(busLine,busPosition,route));
-                    }
-                }
-            }
-            bus.put(Integer.parseInt(busLine.getLineId().trim()),test);
+        for (BusLine busLine : busLines) {
+            ArrayList<Bus> temp = new ArrayList<>();
+            for (BusPosition busPosition : busPositions)
+                if (busLine.getLineCode().equals(busPosition.getLineCode()))
+                    for (Route route : routes)
+                        if(route.getRouteCode().equals(busPosition.getRouteCode()))
+                            temp.add(new Bus(busLine, busPosition, route));
+            bus.put(busLine.getLineId().trim(), temp);
         }
     }
 }

@@ -3,10 +3,10 @@ import java.io.Serializable;
 class BusLine implements Serializable {
 
     private int LineCode;
-    private int LineId;
+    private String LineId;
     private String description;
 
-    BusLine(int LineCode,int LineId,String description){
+    BusLine(int LineCode,String LineId,String description){
         this.LineId = LineId;
         this.LineCode = LineCode;
         this.description = description;
@@ -17,7 +17,7 @@ class BusLine implements Serializable {
     }
 
     String getLineId() {
-        return Integer.toString(LineId);
+        return LineId;
     }
 
     String getLineCode() {
