@@ -24,6 +24,7 @@ public  class BrokerA {
         public void run() {
             while (true) {
                 try {
+                    bus.keySet();
                     OutputStream os = socket.getOutputStream();
                     OutputStreamWriter osw = new OutputStreamWriter(os);
                     BufferedWriter bw = new BufferedWriter(osw);
