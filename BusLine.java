@@ -2,23 +2,26 @@ import java.io.Serializable;
 
 class BusLine implements Serializable {
 
-    private String LineCode;
-    private String LineId;
-    private String routedescription;
+    private int LineCode;
+    private int LineId;
+    private String description;
 
-    BusLine(String LineCode,String LineId,String routedescription){
-        this.LineId=LineId;
-        this.LineCode=LineCode;
-        this.routedescription=routedescription;
+    BusLine(int LineCode,int LineId,String description){
+        this.LineId = LineId;
+        this.LineCode = LineCode;
+        this.description = description;
     }
-    String getLineId(){
-      return  LineId;
+
+    String getDescription() {
+        return description;
     }
-    String getRouteDescription(){
-        return  routedescription;
+
+    String getLineId() {
+        return Integer.toString(LineId);
     }
-    String getLineCode(){
-        return LineCode;
+
+    String getLineCode() {
+        return Integer.toString(LineCode);
     }
 }
 

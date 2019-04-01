@@ -1,55 +1,63 @@
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 class PubUtilities {
-    static void CreateBusPositions(BufferedReader br,ArrayList<BusPosition> busPositions)throws IOException {
-        String line = br.readLine();
+    static void CreateBusPositions(ArrayList<BusPosition> busPositions) throws IOException, ParseException {
+        BufferedReader in = new BufferedReader(new FileReader("BusPositionsNew.txt"));
+        String line = in.readLine();
+        String [] characteristics = new String[6];
+        int j = 0;
         while(line != null){
-            int pos;
-            String [] characteristics = new String[6];
-            for(int i = 0; i < 6; i++){
-                pos = line.indexOf(",");
-                if(pos < 0)pos = line.length();
-                characteristics[i] = line.substring(0, pos);
-                line = line.substring(0, pos + 1);
+            int i = 0;
+            for(String word : line.split(",")){
+                characteristics[i] = word;
+                i++;
             }
-            busPositions.add(new BusPosition(characteristics[0],characteristics[1],characteristics[2],Double.parseDouble(characteristics[3]),Double.parseDouble(characteristics[4]),characteristics[5]));
-            line = br.readLine();
+            String string = characteristics[5];
+            DateFormat format = new SimpleDateFormat("MMM  d yyyy HH:mm:ss:SSSa", Locale.ENGLISH);
+            Date date = format.parse(string);
+            busPositions.add(new BusPosition(Integer.parseInt(characteristics[0].trim()),Integer.parseInt(characteristics[1].trim()),Integer.parseInt(characteristics[2].trim()),Double.parseDouble(characteristics[3].trim()),Double.parseDouble(characteristics[4].trim()), date));
+            line = in.readLine();
         }
+        in.close();
     }
 
-    static void CreateRoutes(BufferedReader br,ArrayList<Route> routes) throws IOException {
-        String line = "";
+    static void CreateRoutes(ArrayList<Route> routes) throws IOException {
+        BufferedReader in = new BufferedReader(new FileReader("RouteCodesNew.txt"));
+        String line = in.readLine();
+        String [] characteristics = new String[4];
         while(line != null){
-            String [] characteristics = new String[4];
-            line = br.readLine();
-            for(int i=0; i < 3; i++){
-                int pos = line.indexOf(",");
-                characteristics[i] = line.substring(0,pos);
-                line = line.substring(pos+1);
+            int i = 0;
+            for (String word : line.split(",")) {
+                characteristics[i] = word;
+                i++;
             }
-            int pos2 = line.indexOf("[");
-            if(pos2 < 0) pos2 = line.length();//if ([) does not exist
-            characteristics[3] = line.substring(0,pos2);
-            routes.add(new Route(characteristics[0],characteristics[1],characteristics[2],characteristics[3]));
-            line = br.readLine();
+            routes.add(new Route(Integer.parseInt(characteristics[0].trim()),Integer.parseInt(characteristics[1].trim()),Integer.parseInt(characteristics[2].trim()),characteristics[3].trim()));
+            line = in.readLine();
         }
+        in.close();
     }
 
-    static void CreateBusLines(BufferedReader br,ArrayList<BusLine> busLines) throws  IOException{
-        String line = "";
+    static void CreateBusLines(ArrayList<BusLine>  busLines) throws  IOException{
+        BufferedReader in = new BufferedReader(new FileReader("BusLinesNew.txt"));
+        String line = in.readLine();
+        String [] characteristics = new String[3];
         while(line != null){
-            String [] characteristics = new String[3];
-            line = br.readLine();
-            for(int i=0; i<2; i++){
-                int pos = line.indexOf(",");
-                characteristics[i] = line.substring(0,pos);
-                line = line.substring(pos+1);
+            int i = 0;
+            for (String word : line.split(",")) {
+                characteristics[i] = word;
+                i++;
             }
-            busLines.add(new BusLine(characteristics[0],characteristics[1],characteristics[2]));
-
-            line = br.readLine();
+            busLines.add(new BusLine(Integer.parseInt(characteristics[0].trim()),Integer.parseInt(characteristics[1].trim()),characteristics[2].trim()));
+            line = in.readLine();
         }
+        in.close();
     }
 }

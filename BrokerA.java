@@ -31,7 +31,7 @@ public  class BrokerA {
                     for (BusLine rl : responsibleLines) {
                         for (Route r2 : routes) {
                             if (rl.getLineCode().equals(r2.getLineCode()))
-                                bw.write(rl.getRouteDescription() + "\n");
+                                bw.write(rl.getDescription() + "\n");
                             bw.flush();
                             bw.write(rl.getLineId() + "\n\n");
                             bw.flush();

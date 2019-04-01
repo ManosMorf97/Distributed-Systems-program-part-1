@@ -1,28 +1,31 @@
 import java.io.Serializable;
 
 public class Route implements Serializable {
-    private String routedescription;
-    private String LineCode;
-    private String RouteCode;
-    private String RouteType;
+    private String description;
+    private int LineCode;
+    private int RouteCode;
+    private int RouteType;
 
-    public Route(String  RouteCode ,String LineCode,String RouteType,String routedescription){
-        this.routedescription = routedescription;
-       this.RouteCode = RouteCode;
-       this.LineCode = LineCode;
-       this.RouteType = RouteType;
+    public Route(int  RouteCode ,int LineCode,int RouteType,String description){
+        this.description = description;
+        this.RouteCode = RouteCode;
+        this.LineCode = LineCode;
+        this.RouteType = RouteType;
     }
-    public String getRouteDescription(){
-        return routedescription;
+
+    String getLineCode(){
+        return Integer.toString(LineCode);
     }
-    public String getRouteCode(){
-        return RouteCode;
+
+    public String getRouteCode() {
+        return Integer.toString(RouteCode);
     }
-    public String getRouteType(){
+
+    public int getRouteType() {
         return RouteType;
     }
-    public String getLineCode(){
-        return LineCode;
-    }
 
+    public String getDescription() {
+        return description;
+    }
 }

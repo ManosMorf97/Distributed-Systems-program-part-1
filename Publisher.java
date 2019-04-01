@@ -1,16 +1,20 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 class Publisher{
 
-    static ArrayList<BusLine> busLines = new ArrayList<>();
+    private static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<Route> routes = new ArrayList<>();
+    private static HashMap<Integer,Bus> bus = new HashMap<>();
 
-    public static void main(String[] args) throws IOException {
-        makeArrays();
+    public static void main(String[] args) throws IOException, ParseException {
+        makeMaps();
 
         ServerSocket Server = new ServerSocket(5000);
 
@@ -31,21 +35,11 @@ class Publisher{
         }
     }
 
-    private static void makeArrays() throws IOException {
-        FileReader fr = new FileReader("RouteCodesNew.txt");
-        BufferedReader br = new BufferedReader(fr);
-        PubUtilities.CreateRoutes(br,routes);
-        br.close();
-        fr.close();
-        fr = new FileReader("BusLinesNew.txt");
-        br = new BufferedReader(fr);
-        PubUtilities.CreateBusLines(br,busLines);
-        br.close();
-        fr.close();
-        fr = new FileReader("BusPositionsNew.txt");
-        br = new BufferedReader(fr);
-        PubUtilities.CreateBusPositions(br,busPositions);
-        br.close();
-        fr.close();
+    private static void makeMaps() throws IOException, ParseException {
+        PubUtilities.CreateRoutes(routes);
+        PubUtilities.CreateBusLines(busLines);
+        PubUtilities.CreateBusPositions(busPositions);
+
+
     }
 }
