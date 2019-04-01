@@ -25,16 +25,8 @@ public  class BrokerA {
                     BufferedWriter bw = new BufferedWriter(osw);
                     bw.write("I am broker A and I am responsible for these keys:\n");
                     bw.flush();
-                    //String message = (String) in.readObject();
-//                    for (BusLine rl : responsibleLines) {
-//                        for (Route r2 : ) {
-//                            if (rl.getLineCode().equals(r2.getLineCode()))
-//                                bw.write(rl.getDescription() + "\n");
-//                            bw.flush();
-//                            bw.write(rl.getLineId() + "\n\n");
-//                            bw.flush();
-//                        }
-//                    }
+                    String message = (String) in.readObject();
+
 
                     for (Map.Entry<String, ArrayList<Bus>> lineId : bus.entrySet()) {
                         ArrayList<Bus> bus1 = lineId.getValue();
