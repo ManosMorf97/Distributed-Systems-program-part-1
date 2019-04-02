@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 
-public  class BrokerA {
+public  class BrokerC {
     static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static HashMap<String,ArrayList<Bus>>  bus = new HashMap<>();
     private static ArrayList<BusLine> busLines = new ArrayList<>();
@@ -35,18 +35,15 @@ public  class BrokerA {
 
                 while(true){
                     BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
-                    outToClient.println("I am broker A and I am responsible for these keys");
+                    outToClient.println("I am broker C and I am responsible for these keys");
 
                     for (String lineId : bus.keySet()) {
                         outToClient.println(lineId);
                     }
+                    outToClient.println("Broker A is responsible for these Keys");
+
 
                     outToClient.println("Broker B is responsible for these Keys");
-                    for (BusLine busLine: BrokerB.responsibleLines){
-                        outToClient.println(busLine.getLineId());
-                    }
-
-                    outToClient.println("Broker C is responsible for these Keys");
                     outToClient.println("Done");
 
                     String inputLineId = inFromClient.readLine();
@@ -67,7 +64,7 @@ public  class BrokerA {
         }
     }
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        new BrokerA().pull();
+        new BrokerC().pull();
 
         System.out.println("sd");
         ServerSocket Server = new ServerSocket(4321);
@@ -81,9 +78,9 @@ public  class BrokerA {
 
 
 
-    private void pull() throws IOException, ClassNotFoundException{
+    private void pull() throws IOException, ClassNotFoundException, InterruptedException{
         try {
-            Socket clientSocket = new Socket("localhost", 10000);
+            Socket clientSocket = new Socket("localhost", 5002);
             Object inFromServer;
             Object outToServer;
 
@@ -91,7 +88,7 @@ public  class BrokerA {
                 try {
                     BroUtilities.CreateBusLines(busLines);
                     for(BusLine busLine: busLines){
-                        if(BroUtilities.MD5(busLine.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 10000)) < 0){
+                        if(BroUtilities.MD5(busLine.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 5001)) < 0){
                             responsibleLines.add(busLine);
                         }
                     }
