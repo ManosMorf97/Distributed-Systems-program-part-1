@@ -1,9 +1,6 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Map;
+import java.util.*;
 
 
 public  class BrokerA {
@@ -26,70 +23,67 @@ public  class BrokerA {
             }
         }
 
-        public void startCommunication() throws IOException {
+        void startCommunication() throws IOException {
             while (true) {
                 Socket connected = Server.accept();
-                System.out.println(" THE CLIENT" + " " + connected.getInetAddress()
-                        + ":" + connected.getPort() + " IS CONNECTED ");
+                System.out.println(" THE CLIENT" + " " + connected.getInetAddress() + ":" + connected.getPort() + " IS CONNECTED ");
 
-                BufferedReader inFromUser = new BufferedReader(
-                        new InputStreamReader(System.in));
+                BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 
 
-                PrintWriter outToClient = new PrintWriter(
-                        connected.getOutputStream(), true);
-                 while(true){
-                     BufferedReader inFromClient = new BufferedReader(
-                             new InputStreamReader(connected.getInputStream()));
+                PrintWriter outToClient = new PrintWriter(connected.getOutputStream(), true);
 
-                     outToClient.println("I am broker A and I am responsible for these keys");
-                Set<String> lineIds = bus.keySet();
-                for (String lineId : lineIds) {
-                    outToClient.println(lineId);
-                }
-                outToClient.println("Broker B is responsible for these Keys");
-                outToClient.println("Broker C is responsible for these Keys");
-                outToClient.println("Done");
-                String inputLineId = inFromClient.readLine();
-                //while (!inputLineId.equals("bye")) {
-                     ArrayList<Bus> buses;
-                     try {
-                         buses = bus.get(inputLineId);
-                         for (Bus bus_ : buses) {
-                             outToClient.println("Latitude: " + bus_.getBusPosition().getLatitude() + " Longitude: " + bus_.getBusPosition().getLongitude() + "Time: " + bus_.getBusPosition().getTime().toString());
+                while(true){
+                    BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
+                    outToClient.println("I am broker A and I am responsible for these keys");
+                    Set<String> lineIds = bus.keySet();
+                    for (String lineId : lineIds) {
+                        outToClient.println(lineId);
+                    }
+                    outToClient.println("Broker B is responsible for these Keys");
+                    outToClient.println("Broker C is responsible for these Keys");
+                    outToClient.println("Done");
+                    String inputLineId = inFromClient.readLine();
+                    //while (!inputLineId.equals("bye")) {
+                    ArrayList<Bus> buses;
+                    try {
+                        buses = bus.get(inputLineId);
+                        buses.sort(Comparator.comparing(o -> o.getBusPosition().getTime()));
+                        for (Bus bus_ : buses)
+                            outToClient.println("The bus with id " + bus_.getBusPosition().getVehicleId() + " was last spotted at " + bus_.getBusPosition().getTime() + " on the position with Latitude: " + bus_.getBusPosition().getLatitude() + " and  Longitude: " + bus_.getBusPosition().getLongitude() + " at route " + bus_.getRoute().getDescription()) ;
 
-                         }
-                     }catch(NullPointerException e){
-                         outToClient.println("No buses for me");
-                     }
-
-
+                    }catch(NullPointerException e){
+                        outToClient.println("No buses for me");
+                    }
 
 
                     outToClient.println("next");
                     //inputLineId = inFromClient.readLine();
                 //}
-            }
+                }
             }
         }
     }
         public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
             Socket clientSocket = new Socket("localhost", 5000);
+            Object inFromUser;
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
             while (true) {
                 try {
-                    bus = (HashMap<String, ArrayList<Bus>>) in.readObject();
-                    String stop = (String) in.readObject();
-                    BroUtilities.ActivateResponsibility(bus, 4321);
-                    if (stop.equals("Stop")) break;
+                    inFromUser = in.readObject();
+                    if (inFromUser.equals("Stop")) break;
+                    else{
+                        bus = (HashMap<String, ArrayList<Bus>>) inFromUser;
+                        BroUtilities.ActivateResponsibility(bus, 4321);
+                    }
                 } catch (EOFException ignored) {
 
 
                 }
             }
-                clientSocket.close();
-                System.out.println("sd");
-                ServerSocket Server=new ServerSocket(4321);
+            clientSocket.close();
+            System.out.println("sd");
+            ServerSocket Server = new ServerSocket(4321);
             while (true) {
                 ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(Server);
                 Thread t = new Thread(cwct);
@@ -97,7 +91,7 @@ public  class BrokerA {
                 t.join();
             }
 
-                 //System.out.println("TCPServer Waiting for client on port 4321");
+            //System.out.println("TCPServer Waiting for client on port 4321");
 
         }
     }
