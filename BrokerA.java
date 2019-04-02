@@ -4,8 +4,9 @@ import java.util.*;
 
 
 public  class BrokerA {
-    static HashMap<String,ArrayList<Bus>> responsibleLines = new HashMap<>();
+    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
     private static HashMap<String,ArrayList<Bus>>  bus = new HashMap<>();
+    private static ArrayList<BusLine> busLines = new ArrayList<>();
 
 
     public static class ComunicationWithConsumerThread implements Runnable {
@@ -36,21 +37,21 @@ public  class BrokerA {
                 while(true){
                     BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
                     outToClient.println("I am broker A and I am responsible for these keys");
-                    Set<String> lineIds = bus.keySet();
-                    for (String lineId : lineIds) {
+
+                    for (String lineId : bus.keySet()) {
                         outToClient.println(lineId);
                     }
                     outToClient.println("Broker B is responsible for these Keys");
                     outToClient.println("Broker C is responsible for these Keys");
                     outToClient.println("Done");
+
                     String inputLineId = inFromClient.readLine();
-                    //while (!inputLineId.equals("bye")) {
                     ArrayList<Bus> buses;
                     try {
                         buses = bus.get(inputLineId);
                         buses.sort(Comparator.comparing(o -> o.getBusPosition().getTime()));
                         for (Bus bus_ : buses)
-                            outToClient.println("The bus with id " + bus_.getBusPosition().getVehicleId() + " was last spotted at " + bus_.getBusPosition().getTime() + " on the position with Latitude: " + bus_.getBusPosition().getLatitude() + " and  Longitude: " + bus_.getBusPosition().getLongitude() + " at route " + bus_.getRoute().getDescription()) ;
+                            outToClient.println("The bus with id " + bus_.getBusPosition().getVehicleId() + " was last spotted at [" + bus_.getBusPosition().getTime() + "] at \nLatitude: " + bus_.getBusPosition().getLatitude() + "\nLongitude: " + bus_.getBusPosition().getLongitude() + "\nRoute: " + bus_.getRoute().getDescription() + "\n-----------------------------------------------------------\n") ;
 
                     }catch(NullPointerException e){
                         outToClient.println("No buses for me");
@@ -58,23 +59,36 @@ public  class BrokerA {
 
 
                     outToClient.println("next");
-                    //inputLineId = inFromClient.readLine();
-                //}
+
                 }
             }
         }
     }
         public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
             Socket clientSocket = new Socket("localhost", 5000);
-            Object inFromUser;
-            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+            Object inFromServer;
+            Object outToServer;
+
             while (true) {
                 try {
-                    inFromUser = in.readObject();
-                    if (inFromUser.equals("Stop")) break;
+                    BroUtilities.CreateBusLines(busLines);
+                    for(BusLine busLine: busLines){
+                        if(BroUtilities.MD5(busLine.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 5000)) < 0){
+                            responsibleLines.add(busLine);
+                        }
+                    }
+                    ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+
+                    outToServer = responsibleLines;
+                    out.writeObject("Sending Lines");
+                    out.writeObject(outToServer);
+                    ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+                    inFromServer = in.readObject();
+                    if (inFromServer.equals("Stop")) break;
                     else{
-                        bus = (HashMap<String, ArrayList<Bus>>) inFromUser;
-                        BroUtilities.ActivateResponsibility(bus, 4321);
+                        bus = (HashMap<String, ArrayList<Bus>>) inFromServer;
+                        inFromServer = in.readObject();
+                        if (inFromServer.equals("Stop")) break;
                     }
                 } catch (EOFException ignored) {
 
