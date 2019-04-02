@@ -23,28 +23,32 @@ public class Consumer {
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(
                 System.in));
 
-        PrintWriter outToServer = new PrintWriter(
-                clientSocket.getOutputStream(), true);
 
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(
                 clientSocket.getInputStream()));
+        Scanner input=new Scanner(System.in);
+        String line = inFromServer.readLine();
         while(true){
-            String line = inFromServer.readLine();
+            PrintWriter outToServer = new PrintWriter(
+                    clientSocket.getOutputStream(), true);
+
             while (!line.equals("Done")) {
                 System.out.println(line);
                 line = inFromServer.readLine();
+            }
                 System.out.println("Type the buslines you re interessted in.When you done type : bye \n");
-                Scanner input=new Scanner(System.in);
+
                 String busline = input.nextLine() + "\n";
+                System.out.println("DO "+busline);
                 outToServer.println(busline);
                 String answer = inFromServer.readLine();
                 while (!answer.equals("next")) {
                     System.out.println(answer);
                     answer = inFromServer.readLine();
                 }
-                System.out.println("Do you want to connect with other broker? 0 for no 1 for yes");
+                //System.out.println("Do you want to connect with other broker? 0 for no 1 for yes");
+                line = inFromServer.readLine();
 
-            }
         }
     }
     public static void main(String[] args) throws Exception {

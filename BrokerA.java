@@ -35,31 +35,40 @@ public  class BrokerA {
                 BufferedReader inFromUser = new BufferedReader(
                         new InputStreamReader(System.in));
 
-                BufferedReader inFromClient = new BufferedReader(
-                        new InputStreamReader(connected.getInputStream()));
 
                 PrintWriter outToClient = new PrintWriter(
                         connected.getOutputStream(), true);
                  while(true){
-                outToClient.println("I am broker A and I am responsible for these keys");
+                     BufferedReader inFromClient = new BufferedReader(
+                             new InputStreamReader(connected.getInputStream()));
+
+                     outToClient.println("I am broker A and I am responsible for these keys");
                 Set<String> lineIds = bus.keySet();
                 for (String lineId : lineIds) {
-                    System.out.println(lineId);
+                    outToClient.println(lineId);
                 }
                 outToClient.println("Broker B is responsible for these Keys");
                 outToClient.println("Broker C is responsible for these Keys");
                 outToClient.println("Done");
                 String inputLineId = inFromClient.readLine();
-                while (!inputLineId.equals("bye")) {
-                    ArrayList<Bus> buses = bus.get(inputLineId);
-                    int i = 0;
-                    for (Bus bus_ : buses) {
-                        outToClient.println("Latitude: " + bus_.getBusPosition().getLatitude() + " Longitude: " + bus_.getBusPosition().getLongitude() + "Time: " + bus_.getBusPosition().getTime().toString());
-                        i++;
-                    }
-                    if (i == 0) System.out.println("No buses for me");
+                //while (!inputLineId.equals("bye")) {
+                     ArrayList<Bus> buses;
+                     try {
+                         buses = bus.get(inputLineId);
+                         for (Bus bus_ : buses) {
+                             outToClient.println("Latitude: " + bus_.getBusPosition().getLatitude() + " Longitude: " + bus_.getBusPosition().getLongitude() + "Time: " + bus_.getBusPosition().getTime().toString());
+
+                         }
+                     }catch(NullPointerException e){
+                         outToClient.println("No buses for me");
+                     }
+
+
+
+
                     outToClient.println("next");
-                }
+                    //inputLineId = inFromClient.readLine();
+                //}
             }
             }
         }
@@ -81,11 +90,14 @@ public  class BrokerA {
                 clientSocket.close();
                 System.out.println("sd");
                 ServerSocket Server=new ServerSocket(4321);
-                 ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(Server);
-                 Thread t = new Thread(cwct);
-                 t.start();
-                 t.join();
-                 System.out.println("TCPServer Waiting for client on port 4321");
+            while (true) {
+                ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(Server);
+                Thread t = new Thread(cwct);
+                t.start();
+                t.join();
+            }
+
+                 //System.out.println("TCPServer Waiting for client on port 4321");
 
         }
     }
