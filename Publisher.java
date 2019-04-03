@@ -7,18 +7,14 @@ import java.util.HashMap;
 
 class Publisher{
     static private final int PORT = 10000;
-    static private final int PORT2 = 11000;
-
-    private static ArrayList<BusLine> busLines = new ArrayList<>();
-    private static ArrayList<BusPosition> busPositions = new ArrayList<>();
-    private static ArrayList<Route> routes = new ArrayList<>();
-    private static HashMap<String,ArrayList<Bus>> bus = new HashMap<>();
-    private static HashMap<String, HashMap<String, ArrayList<Bus>>> test = new HashMap<>();
+    static ArrayList<Value> values = new ArrayList<>();
+    private static HashMap<String, HashMap<String, ArrayList<Value>>> test = new HashMap<>();
     private int numConnections = 0;
-    Socket connection;
+    private Socket connection;
 
     public static void main(String[] args) throws IOException, ParseException, InterruptedException {
-        makeMaps();
+        PubUtilities.CreateNames();
+        PubUtilities.CreateBuses();
         Publisher server = new Publisher();
         ServerSocket providerSocket = new ServerSocket(PORT, 3);
         System.out.println("Waiting for clients to connect...");
@@ -79,33 +75,29 @@ class Publisher{
                 inFromServer = in.readObject();
                 if(inFromServer.toString().startsWith("Broker")) {
                     broker = inFromServer.toString().substring(6);
-                    busLines = (ArrayList<BusLine>) in.readObject();
+                    //busLines = (ArrayList<Topic>) in.readObject();
                     System.out.println("Got client " + broker + " !");
-                    for (BusLine busLine : busLines) {
-                        ArrayList<Bus> temp = new ArrayList<>();
-                        for (BusPosition busPosition : busPositions) {
-                            if (busLine.getLineCode().equals(busPosition.getLineCode()))
-                                for (Route route : routes)
-                                    if (route.getRouteCode().equals(busPosition.getRouteCode()))
-                                        temp.add(new Bus(busLine, busPosition, route));
-                        }
-                        bus.put(busLine.getLineId().trim(), temp);
-                    }
-                    test.put(broker,bus);
+
+
+
+
+
+//                    for (Value value : values) {
+//                        if(topic.e)
+//                        ArrayList<Value> temp = new ArrayList<>();
+//                        for (Bus bus : busPositions) {
+//                            if (topic.getLineCode().equals(bus.getLineCode()))
+//                                for (Route route : routes)
+//                                    if (route.getRouteCode().equals(bus.getRouteCode()))
+//                                        temp.add(new Value(topic, bus, route));
+//                        }
+//                        bus.put(topic.getLineId().trim(), temp);
+//                    }
+//                    test.put(broker,bus);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
     }
-
-    private static void makeMaps() throws IOException, ParseException {
-        PubUtilities.CreateRoutes(routes);
-        PubUtilities.CreateBusLines(busLines);
-        PubUtilities.CreateBusPositions(busPositions);
-    }
 }
-
-
-//push(topic,value) -> [broker]
-//pull(topic,[broker]) -> [topic,value]

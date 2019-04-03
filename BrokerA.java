@@ -6,9 +6,9 @@ import java.util.HashMap;
 
 
 public  class BrokerA {
-    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
-    private static HashMap<String, HashMap<String, ArrayList<Bus>>>  bus = new HashMap<>();
-    private static ArrayList<BusLine> busLines = new ArrayList<>();
+    private static ArrayList<Topic> responsibleLines = new ArrayList<>();
+    private static HashMap<String, HashMap<String, ArrayList<Value>>>  bus = new HashMap<>();
+    private static ArrayList<Topic> topics = new ArrayList<>();
 
 
     public static class ComunicationWithConsumerThread implements Runnable {
@@ -48,15 +48,15 @@ public  class BrokerA {
                     outToClient.println("Done");
 
                     String inputLineId = inFromClient.readLine();
-                    ArrayList<Bus> buses;
+                    ArrayList<Value> values;
                     try {
-                        buses = bus.get("A").get(inputLineId);
-                        buses.sort(Comparator.comparing(o -> o.getBusPosition().getTime()));
-                        for (Bus bus_ : buses)
-                            outToClient.println("The bus with id " + bus_.getBusPosition().getVehicleId() + " was last spotted at [" + bus_.getBusPosition().getTime() + "] at \nLatitude: " + bus_.getBusPosition().getLatitude() + "\nLongitude: " + bus_.getBusPosition().getLongitude() + "\nRoute: " + bus_.getRoute().getDescription() + "\n-----------------------------------------------------------\n") ;
+                        values = bus.get("A").get(inputLineId);
+                        values.sort(Comparator.comparing(o -> o.getBus().getTime()));
+//                        for (Value bus_2_ : values)
+//                            outToClient.println("The bus with id " + bus_2_.getBus().getVehicleId() + " was last spotted at [" + bus_2_.getBus().getTime() + "] at \nLatitude: " + bus_2_.getBus().getLatitude() + "\nLongitude: " + bus_2_.getBus().getLongitude() + "\nRoute: " + bus_2_.getRoute().getDescription() + "\n-----------------------------------------------------------\n") ;
 
                     }catch(NullPointerException e){
-                        outToClient.println("No buses for me");
+                        outToClient.println("No values for me");
                     }
                     outToClient.println("next");
 
@@ -65,11 +65,11 @@ public  class BrokerA {
         }
     }
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        BroUtilities.CreateBusLines(busLines);
+        BroUtilities.CreateBusLines(topics);
 
-        for(BusLine busLine: busLines){
-            if(BroUtilities.MD5(busLine.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 10000)) < 0){
-                responsibleLines.add(busLine);
+        for(Topic topic : topics){
+            if(BroUtilities.MD5(topic.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 10000)) < 0){
+                responsibleLines.add(topic);
             }
         }
 
@@ -82,7 +82,7 @@ public  class BrokerA {
         out.writeObject("BrokerA");
         out.writeObject(outToServer);
 
-        new BrokerA().run(clientSocket);
+        new BrokerA().pull(clientSocket);
 
         ServerSocket Server = new ServerSocket(4321);
 
@@ -97,7 +97,7 @@ public  class BrokerA {
 
 
 
-    private void run(Socket clientSocket) throws IOException, ClassNotFoundException{
+    private void pull(Socket clientSocket) throws IOException, ClassNotFoundException{
         try {
             ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
             while (true) {
@@ -105,7 +105,7 @@ public  class BrokerA {
                     Object inFromServer;
                     inFromServer = in.readObject();
                     if(!inFromServer.equals("Stop")){
-                        bus = (HashMap<String, HashMap<String, ArrayList<Bus>>>) inFromServer;
+                        bus = (HashMap<String, HashMap<String, ArrayList<Value>>>) inFromServer;
                     }else{
                         break;
                     }

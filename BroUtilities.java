@@ -16,7 +16,7 @@ class BroUtilities {
         return null;
     }
 
-    static void CreateBusLines(ArrayList<BusLine>  busLines) throws IOException {
+    static void CreateBusLines(ArrayList<Topic> topics) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader("BusLinesNew.txt"));
         String line = in.readLine();
         String [] characteristics = new String[3];
@@ -26,7 +26,7 @@ class BroUtilities {
                 characteristics[i] = word;
                 i++;
             }
-            busLines.add(new BusLine(Integer.parseInt(characteristics[0].trim()),characteristics[1].trim(),characteristics[2].trim()));
+            topics.add(new Topic(characteristics[1].trim()));
             line = in.readLine();
         }
         in.close();

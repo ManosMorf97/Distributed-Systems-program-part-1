@@ -41,9 +41,7 @@ public class Consumer {
                 System.out.println(answer);
                 answer = inFromServer.readLine();
             }
-            //System.out.println("Do you want to connect with other broker? 0 for no 1 for yes");
             line = inFromServer.readLine();
-
         }
     }
 }
