@@ -6,8 +6,8 @@ import java.util.HashMap;
 
 
 public  class BrokerA {
-    static ArrayList<BusLine> responsibleLines = new ArrayList<>();
-    private static HashMap<String,ArrayList<Bus>>  bus = new HashMap<>();
+    private static ArrayList<BusLine> responsibleLines = new ArrayList<>();
+    private static HashMap<String, HashMap<String, ArrayList<Bus>>>  bus = new HashMap<>();
     private static ArrayList<BusLine> busLines = new ArrayList<>();
 
 
@@ -35,24 +35,22 @@ public  class BrokerA {
 
                 while(true){
                     BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
-                    outToClient.println("I am broker A and I am responsible for these keys");
 
-                    for (String lineId : bus.keySet()) {
-                        outToClient.println(lineId);
-                    }
+                    outToClient.println("I am broker A and I am responsible for these keys");
+                    for (String lineId : bus.get("A").keySet()) outToClient.println(lineId);
 
                     outToClient.println("Broker B is responsible for these Keys");
-                    for (BusLine busLine: BrokerB.responsibleLines){
-                        outToClient.println(busLine.getLineId());
-                    }
+                    for (String lineId : bus.get("B").keySet()) outToClient.println(lineId);
 
                     outToClient.println("Broker C is responsible for these Keys");
+                    for (String lineId : bus.get("C").keySet()) outToClient.println(lineId);
+
                     outToClient.println("Done");
 
                     String inputLineId = inFromClient.readLine();
                     ArrayList<Bus> buses;
                     try {
-                        buses = bus.get(inputLineId);
+                        buses = bus.get("A").get(inputLineId);
                         buses.sort(Comparator.comparing(o -> o.getBusPosition().getTime()));
                         for (Bus bus_ : buses)
                             outToClient.println("The bus with id " + bus_.getBusPosition().getVehicleId() + " was last spotted at [" + bus_.getBusPosition().getTime() + "] at \nLatitude: " + bus_.getBusPosition().getLatitude() + "\nLongitude: " + bus_.getBusPosition().getLongitude() + "\nRoute: " + bus_.getRoute().getDescription() + "\n-----------------------------------------------------------\n") ;
@@ -67,11 +65,29 @@ public  class BrokerA {
         }
     }
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        new BrokerA().pull();
+        BroUtilities.CreateBusLines(busLines);
 
-        System.out.println("sd");
+        for(BusLine busLine: busLines){
+            if(BroUtilities.MD5(busLine.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 10000)) < 0){
+                responsibleLines.add(busLine);
+            }
+        }
+
+        Socket clientSocket = new Socket("localhost", 10000);
+
+        Object outToServer;
+
+        ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+        outToServer = responsibleLines;
+        out.writeObject("BrokerA");
+        out.writeObject(outToServer);
+
+        new BrokerA().run(clientSocket);
+
         ServerSocket Server = new ServerSocket(4321);
+
         while (true) {
+
             ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(Server);
             Thread t = new Thread(cwct);
             t.start();
@@ -81,35 +97,19 @@ public  class BrokerA {
 
 
 
-    private void pull() throws IOException, ClassNotFoundException{
+    private void run(Socket clientSocket) throws IOException, ClassNotFoundException{
         try {
-            Socket clientSocket = new Socket("localhost", 10000);
-            Object inFromServer;
-            Object outToServer;
-
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
             while (true) {
                 try {
-                    BroUtilities.CreateBusLines(busLines);
-                    for(BusLine busLine: busLines){
-                        if(BroUtilities.MD5(busLine.getLineId()).compareTo(BroUtilities.MD5(InetAddress.getLocalHost().toString() + 10000)) < 0){
-                            responsibleLines.add(busLine);
-                        }
-                    }
-                    ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-
-                    outToServer = responsibleLines;
-                    out.writeObject("Sending Lines");
-                    out.writeObject(outToServer);
-                    ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+                    Object inFromServer;
                     inFromServer = in.readObject();
-                    if (inFromServer.equals("Stop")) break;
-                    else{
-                        bus = (HashMap<String, ArrayList<Bus>>) inFromServer;
-                        inFromServer = in.readObject();
-                        if (inFromServer.equals("Stop")) break;
+                    if(!inFromServer.equals("Stop")){
+                        bus = (HashMap<String, HashMap<String, ArrayList<Bus>>>) inFromServer;
+                    }else{
+                        break;
                     }
                 } catch (EOFException ignored) {
-
 
                 }
             }

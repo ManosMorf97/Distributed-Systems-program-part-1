@@ -4,63 +4,83 @@ import java.net.Socket;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 class Publisher{
     static private final int PORT = 10000;
+    static private final int PORT2 = 11000;
 
     private static ArrayList<BusLine> busLines = new ArrayList<>();
     private static ArrayList<BusPosition> busPositions = new ArrayList<>();
     private static ArrayList<Route> routes = new ArrayList<>();
     private static HashMap<String,ArrayList<Bus>> bus = new HashMap<>();
+    private static HashMap<String, HashMap<String, ArrayList<Bus>>> test = new HashMap<>();
+    private int numConnections = 0;
+    Socket connection;
 
-
-    public static void main(String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException, InterruptedException {
         makeMaps();
-        new Publisher().push();
+        Publisher server = new Publisher();
+        ServerSocket providerSocket = new ServerSocket(PORT, 3);
+        System.out.println("Waiting for clients to connect...");
+        while (true){
+            server.run(providerSocket);
+        }
     }
 
 
-    private void push(){
-        final ExecutorService clientProcessingPool = Executors.newFixedThreadPool(10);
-        Runnable serverTask = () -> {
-            System.out.println("TCPServer Waiting for client on port 5000");
-            try {
-                int i = 0;
-                System.out.println("Waiting for clients to connect...");
-                while (true) {
-                    ServerSocket Server = new ServerSocket(PORT + i);
-                    i = i + 1000;
-                    Socket connected = Server.accept();
-                    clientProcessingPool.submit(new ClientTask(connected));
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Not able to open the port 8080", e);
+    private void run(ServerSocket providerSocket) throws InterruptedException {
+        try {
+            while (numConnections < 3) {
+                connection = providerSocket.accept();
+                Thread t = new Thread(new ConnectionHandler(connection));
+                t.start();
+                t.join();
+                Thread t1 = new Thread(new push(connection));
+                t1.start();
+                t1.join();
             }
-        };
-        Thread serverThread = new Thread(serverTask);
-        serverThread.start();
+        } catch (IOException e) {
+            throw new RuntimeException("Not able to open the port", e);
+        }
     }
+    private class push  implements Runnable {
+        private final Socket connection;
 
-    private class ClientTask implements Runnable {
-        private final Socket clientSocket;
-
-        private ClientTask(Socket clientSocket) {
-            this.clientSocket = clientSocket;
+        private push(Socket connection) {
+            this.connection = connection;
         }
 
         @Override
         public void run() {
             try {
-                System.out.println("Got a client !");
+                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
+                out.writeObject(test);
+                out.writeObject("Stop");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private class ConnectionHandler  implements Runnable {
+        private final Socket connection;
+
+        private ConnectionHandler(Socket connection) {
+            this.connection = connection;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String broker;
+                numConnections++;
                 Object inFromServer;
-                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+                ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
                 inFromServer = in.readObject();
-
-                if(inFromServer.equals("Sending Lines")) {
+                if(inFromServer.toString().startsWith("Broker")) {
+                    broker = inFromServer.toString().substring(6);
                     busLines = (ArrayList<BusLine>) in.readObject();
-
+                    System.out.println("Got client " + broker + " !");
                     for (BusLine busLine : busLines) {
                         ArrayList<Bus> temp = new ArrayList<>();
                         for (BusPosition busPosition : busPositions) {
@@ -71,12 +91,7 @@ class Publisher{
                         }
                         bus.put(busLine.getLineId().trim(), temp);
                     }
-
-                    ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-
-                    out.writeObject(bus);
-                    out.writeObject("Stop");
-                    clientSocket.close();
+                    test.put(broker,bus);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -88,6 +103,9 @@ class Publisher{
         PubUtilities.CreateRoutes(routes);
         PubUtilities.CreateBusLines(busLines);
         PubUtilities.CreateBusPositions(busPositions);
-
     }
 }
+
+
+//push(topic,value) -> [broker]
+//pull(topic,[broker]) -> [topic,value]
