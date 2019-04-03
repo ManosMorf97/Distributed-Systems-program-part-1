@@ -9,7 +9,7 @@ class Publisher{
     static private final int PORT = 10000;
 
     static ArrayList<Value> values = new ArrayList<>();
-    private static HashMap<Topic, ArrayList<Value>> test = new HashMap<>();
+    private static HashMap<Topic, ArrayList<Value>> output = new HashMap<>();
     private int numConnections = 0;
     private ArrayList<String> BrokerList = new ArrayList<>();
     private static ArrayList<Topic> topics = new ArrayList<>();
@@ -30,12 +30,9 @@ class Publisher{
         try {
             while (numConnections < 3) {
                 Socket connection = providerSocket.accept();
-                Thread t = new Thread(new ConnectionHandler(connection));
+                Thread t = new Thread(new push(connection));
                 t.start();
                 t.join();
-                Thread t1 = new Thread(new push(connection));
-                t1.start();
-                t1.join();
             }
         } catch (IOException e) {
             throw new RuntimeException("Not able to open the port", e);
@@ -45,25 +42,6 @@ class Publisher{
         private final Socket connection;
 
         private push(Socket connection) {
-            this.connection = connection;
-        }
-
-        @Override
-        public void run() {
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
-                out.writeObject(test);
-                out.writeObject("Stop");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private class ConnectionHandler  implements Runnable {
-        private final Socket connection;
-
-        private ConnectionHandler(Socket connection) {
             this.connection = connection;
         }
 
@@ -86,22 +64,17 @@ class Publisher{
                                 temp.add(value);
                             }
                         }
-                        test.put(topic,temp);
+                        output.put(topic,temp);
                     }
                 }
+
+                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
+                out.writeObject(output);
+                out.writeObject("Stop");
+
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-
-    public ArrayList<String> getBrokerList(){
-        if(BrokerList.size() == 0){
-            BrokerList.add("Broker A");
-            BrokerList.add("Broker B");
-            BrokerList.add("Broker C");
-        }
-        return BrokerList;
     }
 }
