@@ -1,22 +1,13 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.BindException;
+import java.net.ConnectException;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 class BroUtilities {
-    static String MD5(String md5) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : array) sb.append(Integer.toHexString((b & 0xFF) | 0x100), 1, 3);
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException ignored) {}
-        return null;
-    }
-
-    static void CreateBusLines(ArrayList<Topic> topics) throws IOException {
+        static void CreateBusLines(ArrayList<Topic> topics) throws IOException {
         BufferedReader in = new BufferedReader(new FileReader("BusLinesNew.txt"));
         String line = in.readLine();
         String [] characteristics = new String[3];
@@ -30,5 +21,29 @@ class BroUtilities {
             line = in.readLine();
         }
         in.close();
+    }
+
+    HashMap<Topic, ArrayList<Value>> pull(Socket clientSocket) throws IOException, ClassNotFoundException{
+        HashMap<Topic, ArrayList<Value>> bus = null;
+        try {
+            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
+            while (true) {
+                try {
+                    Object inFromServer;
+                    inFromServer = in.readObject();
+                    if(!inFromServer.equals("Stop")){
+                        bus = (HashMap<Topic, ArrayList<Value>>) inFromServer;
+                    }else{
+                        break;
+                    }
+                } catch (EOFException ignored) {
+
+                }
+            }
+            clientSocket.close();
+        }catch (BindException | ConnectException e){
+            System.out.println("Couldn't connect to server");
+        }
+        return bus;
     }
 }

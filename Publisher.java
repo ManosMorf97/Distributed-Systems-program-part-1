@@ -7,12 +7,15 @@ import java.util.HashMap;
 
 class Publisher{
     static private final int PORT = 10000;
+
     static ArrayList<Value> values = new ArrayList<>();
-    private static HashMap<String, HashMap<String, ArrayList<Value>>> test = new HashMap<>();
+    private static HashMap<Topic, ArrayList<Value>> test = new HashMap<>();
     private int numConnections = 0;
-    private Socket connection;
+    private ArrayList<String> BrokerList = new ArrayList<>();
+    private static ArrayList<Topic> topics = new ArrayList<>();
 
     public static void main(String[] args) throws IOException, ParseException, InterruptedException {
+        BroUtilities.CreateBusLines(topics);
         PubUtilities.CreateNames();
         PubUtilities.CreateBuses();
         Publisher server = new Publisher();
@@ -23,11 +26,10 @@ class Publisher{
         }
     }
 
-
     private void run(ServerSocket providerSocket) throws InterruptedException {
         try {
             while (numConnections < 3) {
-                connection = providerSocket.accept();
+                Socket connection = providerSocket.accept();
                 Thread t = new Thread(new ConnectionHandler(connection));
                 t.start();
                 t.join();
@@ -75,29 +77,31 @@ class Publisher{
                 inFromServer = in.readObject();
                 if(inFromServer.toString().startsWith("Broker")) {
                     broker = inFromServer.toString().substring(6);
-                    //busLines = (ArrayList<Topic>) in.readObject();
                     System.out.println("Got client " + broker + " !");
 
-
-
-
-
-//                    for (Value value : values) {
-//                        if(topic.e)
-//                        ArrayList<Value> temp = new ArrayList<>();
-//                        for (Bus bus : busPositions) {
-//                            if (topic.getLineCode().equals(bus.getLineCode()))
-//                                for (Route route : routes)
-//                                    if (route.getRouteCode().equals(bus.getRouteCode()))
-//                                        temp.add(new Value(topic, bus, route));
-//                        }
-//                        bus.put(topic.getLineId().trim(), temp);
-//                    }
-//                    test.put(broker,bus);
+                    for (Topic topic: topics){
+                        ArrayList<Value> temp = new ArrayList<>();
+                        for (Value value : values) {
+                            if (topic.getLineId().equals(value.getBus().getBuslineId())){
+                                temp.add(value);
+                            }
+                        }
+                        test.put(topic,temp);
+                    }
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    public ArrayList<String> getBrokerList(){
+        if(BrokerList.size() == 0){
+            BrokerList.add("Broker A");
+            BrokerList.add("Broker B");
+            BrokerList.add("Broker C");
+        }
+        return BrokerList;
     }
 }
