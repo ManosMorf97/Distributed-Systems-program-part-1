@@ -74,9 +74,7 @@ class BroUtilities {
     }
 
     private static int ipToLong(String ipAddress) {
-
         String[] ipAddressInArray = ipAddress.split("\\.");
-
         int result = 0;
         for (int i = 0; i < ipAddressInArray.length; i++) {
 
@@ -85,7 +83,6 @@ class BroUtilities {
             result += ip * Math.pow(256, power);
 
         }
-
         return result;
     }
 
