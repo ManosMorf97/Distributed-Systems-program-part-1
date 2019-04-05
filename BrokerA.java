@@ -1,37 +1,53 @@
 import java.io.*;
 import java.net.*;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
 
 public  class BrokerA {
-        private static HashMap<Topic,  ArrayList<Value>> input = new HashMap<>();
+
+    private static HashMap<Topic,  ArrayList<Value>> input = new HashMap<>();
     private static ArrayList<Topic> topics = new ArrayList<>();
-    private static HashMap<String,ArrayList<Topic>> hashed = new HashMap<>();
+    private static HashMap<String, ArrayList<Topic>> hashed = new HashMap<>();
+
+
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        BroUtilities.CreateBusLines(topics);
+        while (hashed.size() == 0) {
+            try (Socket socket = new Socket("localhost", 4321)) {
+                while (true) {
+                    ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(socket);
+                    Thread t = new Thread(cwct);
+                    t.start();
+                    t.join();
+                }
+            } catch (ConnectException e) {
+                System.out.println("Waiting for Consumer!");
+            }
+        }
+    }
 
 
     public static class ComunicationWithConsumerThread implements Runnable {
-        private ServerSocket Server;
-        private HashMap<String, ArrayList<Topic>> temp2;
+        private Socket connected;
 
-        ComunicationWithConsumerThread(ServerSocket Server) {
-            this.Server = Server;
+        ComunicationWithConsumerThread(Socket connected) {
+            this.connected = connected;
         }
 
         public void run() {
             try {
                 startCommunication();
-            }catch(IOException | NoSuchAlgorithmException e){
+            }catch(IOException | ClassNotFoundException e){
                 e.printStackTrace();
             }
         }
 
-        void startCommunication() throws IOException, NoSuchAlgorithmException {
+        void startCommunication() throws IOException, ClassNotFoundException {
             while (true) {
-                Socket connected = Server.accept();
-                System.out.println(" THE CLIENT" + " " + connected.getInetAddress() + ":" + connected.getPort() + " IS CONNECTED ");
+                System.out.println("THE CLIENT" + " " + connected.getInetAddress() + ":" + connected.getPort() + " IS CONNECTED ");
 
                 PrintWriter outToClient = new PrintWriter(connected.getOutputStream(), true);
 
@@ -58,6 +74,19 @@ public  class BrokerA {
                     String inputLineId = inFromClient.readLine();
                     ArrayList<Value> values;
 
+                    boolean temp = true;
+                    while (temp) {
+                        try (Socket clientSocket = new Socket("localhost", 10000)) {
+                            ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                            out.writeObject("BrokerA");
+                            input = new BroUtilities().pull(clientSocket);
+                            temp = false;
+                        } catch (ConnectException e) {
+                            System.out.println("Waiting for Publisher!");
+                        }
+                    }
+
+
                     try {
                         for(Topic topic:input.keySet()){
                             if(topic.getLineId().equals(inputLineId)){
@@ -73,25 +102,6 @@ public  class BrokerA {
 
                 }
             }
-        }
-    }
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        BroUtilities.CreateBusLines(topics);
-        Socket clientSocket = new Socket("localhost", 10000);
-
-        ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-
-        out.writeObject("BrokerA");
-
-        input = new BroUtilities().pull(clientSocket);
-
-        ServerSocket Server = new ServerSocket(4321);
-
-        while (true) {
-            ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(Server);
-            Thread t = new Thread(cwct);
-            t.start();
-            t.join();
         }
     }
 }

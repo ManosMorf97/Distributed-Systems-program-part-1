@@ -38,6 +38,7 @@ class Publisher{
             throw new RuntimeException("Not able to open the port", e);
         }
     }
+
     private class push  implements Runnable {
         private final Socket connection;
 
