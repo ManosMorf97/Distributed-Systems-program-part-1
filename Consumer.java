@@ -1,49 +1,17 @@
 import java.io.*;
-import java.net.ServerSocket;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Consumer {
 
-    public static void main(String[] args) throws Exception {
-        Consumer server = new Consumer();
-        ServerSocket providerSocket = new ServerSocket(4321, 3);
-        System.out.println("Waiting for clients to connect...");
+    public static void main(String[] args){
+        int i = 0;
         while (true){
-        server.run(providerSocket);
-        }
-    }
-
-
-    private void run(ServerSocket providerSocket) throws InterruptedException {
-        try {
-            while (true) {
-                Socket connection = providerSocket.accept();
-                Thread t = new Thread(new server(connection));
-                t.start();
-                t.join();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Not able to open the port", e);
-        }
-    }
-
-
-    private class server  implements Runnable {
-        private final Socket clientSocket;
-
-        private server(Socket clientSocket) {
-            this.clientSocket = clientSocket;
-        }
-
-        @Override
-        public void run() {
-            try {
+            try (Socket clientSocket = new Socket("localhost", 4321)){
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
                 Scanner input = new Scanner(System.in);
                 String line = inFromServer.readLine();
-
                 while(true){
                     PrintWriter outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 
@@ -64,6 +32,13 @@ public class Consumer {
                     }
                     line = inFromServer.readLine();
                 }
+            } catch (ConnectException e) {
+                if (i == 30) {
+                    System.out.println("Connection with broker timed out, we couldn't find any broker.");
+                    break;
+                }
+                System.out.println("Waiting for Broker!");
+                i++;
             } catch (IOException e) {
                 e.printStackTrace();
             }

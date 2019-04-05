@@ -15,20 +15,26 @@ public  class BrokerA {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         BroUtilities.CreateBusLines(topics);
-        while (hashed.size() == 0) {
-            try (Socket socket = new Socket("localhost", 4321)) {
-                while (true) {
-                    ComunicationWithConsumerThread cwct = new ComunicationWithConsumerThread(socket);
-                    Thread t = new Thread(cwct);
-                    t.start();
-                    t.join();
-                }
-            } catch (ConnectException e) {
-                System.out.println("Waiting for Consumer!");
-            }
+        BrokerA brokerA = new BrokerA();
+        ServerSocket providerSocket = new ServerSocket(4321, 3);
+        System.out.println("Waiting for consumers to connect...");
+        while (true) {
+            brokerA.run(providerSocket);
         }
     }
 
+    private void run(ServerSocket providerSocket) throws InterruptedException {
+        try {
+            while (true) {
+                Socket connection = providerSocket.accept();
+                Thread t = new Thread(new ComunicationWithConsumerThread(connection));
+                t.start();
+                t.join();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Not able to open the port", e);
+        }
+    }
 
     public static class ComunicationWithConsumerThread implements Runnable {
         private Socket connected;
@@ -69,14 +75,20 @@ public  class BrokerA {
                 ArrayList<Value> values;
 
                 boolean temp = true;
+                int i = 0;
                 while (temp) {
                     try (Socket clientSocket = new Socket("localhost", 10000)) {
+                        temp = false;
                         ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
                         out.writeObject("BrokerA");
                         input = new BroUtilities().pull(clientSocket);
-                        temp = false;
                     } catch (ConnectException e) {
+                        if (i == 100) {
+                            System.out.println("Connection with server timed out, we couldn't find what you asked for.");
+                            break;
+                        }
                         System.out.println("Waiting for Publisher!");
+                        i++;
                     }
                 }
 
@@ -86,6 +98,7 @@ public  class BrokerA {
                             values = input.get(topic);
                             values.sort(Comparator.comparing(o -> o.getBus().getTime()));
                             for (Value bus_2_ : values) outToClient.println("The bus with id " + bus_2_.getBus().getVehicleId() + " was last spotted at [" + bus_2_.getBus().getTime() + "] at \nLatitude: " + bus_2_.getLatitude() + "\nLongitude: " + bus_2_.getLongitude() + "\nRoute: " + bus_2_.getBus().getLineName() + "\n-----------------------------------------------------------\n") ;
+                            if (values.size()==0) System.out.println("We couldn't find any buses on that line, please try other broker.");
                         }
                     }
                 }catch(NullPointerException e){
