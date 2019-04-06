@@ -60,6 +60,7 @@ class Publisher{
                 }
                 ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
                 out.writeObject(output);
+				out.writeObject("Stop");
                 connection.close();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
