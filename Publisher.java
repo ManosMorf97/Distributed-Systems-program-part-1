@@ -30,7 +30,7 @@ class Publisher{
         }
     }
 
-    private static class push  implements Runnable {
+    private static class push implements Runnable {
         private final Socket connection;
 
         private push(Socket connection) {
