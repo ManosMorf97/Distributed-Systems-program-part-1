@@ -5,32 +5,52 @@ import java.util.Scanner;
 
 public class Consumer {
 
-    public static void main(String[] args){
-        int i = 0;
-        while (true){
-            try (Socket clientSocket = new Socket("localhost", 4321)){
+    private static int port;
+    private static Scanner input = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        while (true) {
+            boolean temp = true;
+            int i = 0;
+            System.out.println("Please choose between our three brokers: ");
+            System.out.println("For BrokerA press: A");
+            System.out.println("For BrokerA press: B");
+            System.out.println("For BrokerA press: C");
+            String broker = input.nextLine();
+
+            if (broker.equals("A")) port = 4321;
+            if (broker.equals("B")) port = 5432;
+            if (broker.equals("C")) port = 7654;
+
+            try (Socket clientSocket = new Socket("localhost", port)) {
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                Scanner input = new Scanner(System.in);
+
                 String line = inFromServer.readLine();
-                while(true){
+
+                while (temp) {
                     PrintWriter outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 
                     while (!line.equals("Done")) {
                         System.out.println(line);
                         line = inFromServer.readLine();
                     }
-                    System.out.println("Type the buslines you re interessted in. When you done type : bye \n");
 
-                    String busline = input.nextLine() + "\n";
+                    System.out.println("Type the bus lines you re interested in or type 'bye' to change broker.");
 
-                    outToServer.println(busline);
-                    String answer = inFromServer.readLine();
+                    String busline = input.nextLine();
 
-                    while (!answer.equals("next")) {
-                        System.out.println(answer);
-                        answer = inFromServer.readLine();
+                    if (!busline.equals("bye")) {
+                        outToServer.println(busline);
+                        String answer = inFromServer.readLine();
+
+                        while (!answer.equals("next")) {
+                            System.out.println(answer);
+                            answer = inFromServer.readLine();
+                        }
+                        line = inFromServer.readLine();
+                    } else {
+                        temp = false;
                     }
-                    line = inFromServer.readLine();
                 }
             } catch (ConnectException e) {
                 if (i == 30) {
