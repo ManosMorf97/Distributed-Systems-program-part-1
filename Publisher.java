@@ -49,11 +49,7 @@ class Publisher{
 
                     for (Topic topic: topics){
                         ArrayList<Value> temp = new ArrayList<>();
-                        for (Value value : values) {
-                            if (topic.getLineId().equals(value.getBus().getBuslineId())){
-                                temp.add(value);
-                            }
-                        }
+                        for (Value value : values) if (topic.getLineId().equals(value.getBus().getBuslineId())) temp.add(value);
                         output.put(topic,temp);
                     }
                 }
