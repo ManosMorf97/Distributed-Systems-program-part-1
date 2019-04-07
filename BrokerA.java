@@ -72,9 +72,9 @@ public  class BrokerA {
                 String inputLineId = inFromClient.readLine();
 
                 boolean temp2 = false;
-                for(Topic topic:topics){
-                    if (topic.getLineId().equals(inputLineId)) temp2 = true;
-                }
+
+                for(Topic topic:hashed.get("BrokerA")) if (topic.getLineId().equals(inputLineId)) temp2 = true;
+
                 if(temp2){
                     ArrayList<Value> values;
                     outToClient.println("Trying to establish connection with the server. Please be patient...");

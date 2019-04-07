@@ -18,9 +18,9 @@ public class Consumer {
             System.out.println("For BrokerA press: C");
             String broker = input.nextLine();
 
-            if (broker.equals("A")) port = 4321;
-            if (broker.equals("B")) port = 5432;
-            if (broker.equals("C")) port = 7654;
+            if (broker.toUpperCase().equals("A")) port = 4321;
+            if (broker.toUpperCase().equals("B")) port = 5432;
+            if (broker.toUpperCase().equals("C")) port = 7654;
 
             try (Socket clientSocket = new Socket("localhost", port)) {
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -39,7 +39,7 @@ public class Consumer {
 
                     String busline = input.nextLine();
 
-                    if (!busline.equals("bye")) {
+                    if (!busline.toLowerCase().equals("bye")) {
                         outToServer.println(busline);
                         String answer = inFromServer.readLine();
 
