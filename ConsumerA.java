@@ -3,7 +3,7 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class Consumer {
+public class ConsumerA {
 
     private static int port;
     private static Scanner input = new Scanner(System.in);

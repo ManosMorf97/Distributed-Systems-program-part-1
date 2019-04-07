@@ -73,7 +73,7 @@ public  class BrokerC {
 
                 boolean temp2 = false;
 
-                for(Topic topic:hashed.get("BrokerA")) if (topic.getLineId().equals(inputLineId)) temp2 = true;
+                for(Topic topic:hashed.get("BrokerC")) if (topic.getLineId().equals(inputLineId)) temp2 = true;
 
                 if(temp2){
                     ArrayList<Value> values;
