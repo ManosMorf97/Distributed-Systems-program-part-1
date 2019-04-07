@@ -75,7 +75,8 @@ public  class BrokerB {
                                 out.writeObject("BrokerB");
                                 input = new BroUtilities().pull(clientSocket);
                             } catch (ConnectException e) {
-                                if (i == 100) {
+                                if (i == 30) {
+                                    outToClient.println("Connection with server timed out, we couldn't find what you asked for.");
                                     System.out.println("Connection with server timed out, we couldn't find what you asked for.");
                                     break;
                                 }
