@@ -23,7 +23,6 @@ class Publisher{
                 Socket connection = providerSocket.accept();
                 Thread t = new Thread(new push(connection));
                 t.start();
-                t.join();
             }
         } catch (IOException e) {
             throw new RuntimeException("Not able to open the port", e);

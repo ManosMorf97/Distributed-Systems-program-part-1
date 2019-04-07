@@ -42,6 +42,7 @@ public  class BrokerA {
 
                     HashMap<String, ArrayList<Topic>> hashed = BroUtilities.MD5(topics);
 
+                    outToClient.println("\n--------------------------------------------------------------------------\n");
                     outToClient.println("I am broker A and I am responsible for these keys");
 
                     for (Topic topic : hashed.get("BrokerA")) outToClient.println(topic.getLineId());
