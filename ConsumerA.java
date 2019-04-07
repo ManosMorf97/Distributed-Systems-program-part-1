@@ -9,9 +9,9 @@ public class ConsumerA {
     private static Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) {
+        int i = 0;
         while (true) {
             boolean temp = true;
-            int i = 0;
             System.out.println("Please choose between our three brokers: ");
             System.out.println("For BrokerA press: A");
             System.out.println("For BrokerA press: B");
@@ -53,11 +53,11 @@ public class ConsumerA {
                     }
                 }
             } catch (ConnectException e) {
-                if (i == 30) {
+                if (i == 10) {
                     System.out.println("Connection with broker timed out, we couldn't find any broker.");
                     break;
                 }
-                System.out.println("Waiting for Broker!");
+                System.out.println("Broker is not online try again in a moment!");
                 i++;
             } catch (IOException e) {
                 e.printStackTrace();

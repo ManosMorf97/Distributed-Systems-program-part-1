@@ -13,7 +13,7 @@ public  class BrokerC {
     private static ArrayList<Topic> topics = new ArrayList<>();
 
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException{
         BroUtilities.CreateBusLines(topics);
         ServerSocket providerSocket = new ServerSocket(7654, 3);
         System.out.println("Waiting for consumers to connect...");
