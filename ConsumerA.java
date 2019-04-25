@@ -31,6 +31,8 @@ public class ConsumerA {
             if (broker.toUpperCase().equals("C")) port = 7654;
 
             try (Socket clientSocket = new Socket("localhost", port)) {
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                out.writeObject("Consumer");
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
                 String line = inFromServer.readLine();

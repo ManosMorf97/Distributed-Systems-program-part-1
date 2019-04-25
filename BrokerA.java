@@ -43,77 +43,60 @@ public  class BrokerA {
 
         public void run() {
             try {
-                while (true) {
-                    System.out.println("THE CLIENT" + " " + connected.getInetAddress() + ":" + connected.getPort() + " IS CONNECTED ");
-                    PrintWriter outToClient = new PrintWriter(connected.getOutputStream(), true);
-                    BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
+                ObjectInputStream in = new ObjectInputStream(connected.getInputStream());
+                Object inFromServer = in.readObject();
+                if (inFromServer.toString().equals("Consumer")) {
+                    while (true) {
+                        System.out.println("THE CLIENT" + " " + connected.getInetAddress() + ":" + connected.getPort() + " IS CONNECTED ");
+                        PrintWriter outToClient = new PrintWriter(connected.getOutputStream(), true);
+                        BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connected.getInputStream()));
+                        HashMap<String, ArrayList<Topic>> hashed = BroUtilities.MD5(topics);
+                        outToClient.println("\n--------------------------------------------------------------------------\n");
+                        outToClient.println("I am broker A and I am responsible for these keys");
+                        for (Topic topic : hashed.get("BrokerA")) outToClient.println(topic.getLineId());
+                        outToClient.println("Broker B is responsible for these Keys");
+                        for (Topic topic : hashed.get("BrokerB")) outToClient.println(topic.getLineId());
+                        outToClient.println("Broker C is responsible for these Keys");
+                        for (Topic topic : hashed.get("BrokerC")) outToClient.println(topic.getLineId());
+                        outToClient.println("Done");
+                        String inputLineId = inFromClient.readLine();
+                        boolean temp2 = false;
+                        for (Topic topic : hashed.get("BrokerA")) if (topic.getLineId().equals(inputLineId)) temp2 = true;
 
-                    HashMap<String, ArrayList<Topic>> hashed = BroUtilities.MD5(topics);
-
-                    outToClient.println("\n--------------------------------------------------------------------------\n");
-                    outToClient.println("I am broker A and I am responsible for these keys");
-
-                    for (Topic topic : hashed.get("BrokerA")) outToClient.println(topic.getLineId());
-
-                    outToClient.println("Broker B is responsible for these Keys");
-                    for (Topic topic : hashed.get("BrokerB")) outToClient.println(topic.getLineId());
-
-                    outToClient.println("Broker C is responsible for these Keys");
-                    for (Topic topic : hashed.get("BrokerC")) outToClient.println(topic.getLineId());
-
-                    outToClient.println("Done");
-
-                    String inputLineId = inFromClient.readLine();
-
-                    boolean temp2 = false;
-
-                    for (Topic topic : hashed.get("BrokerA")) if (topic.getLineId().equals(inputLineId)) temp2 = true;
-
-                    if (temp2) {
-                        ArrayList<Value> values;
-                        outToClient.println("Trying to establish connection with the server. Please be patient...");
-
-                        boolean temp = true;
-                        int i = 0;
-                        while (temp) {
-                            try (Socket clientSocket = new Socket("localhost", 10000)) {
-                                temp = false;
-                                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-                                out.writeObject("BrokerA");
-                                input = new BroUtilities().pull(clientSocket);
-                            } catch (ConnectException e) {
-                                if (i == 30) {
-                                    System.out.println("Connection with server timed out, we couldn't find what you asked for.");
-                                    outToClient.println("Connection with server timed out, we couldn't find what you asked for.");
-                                    break;
+                        if (temp2) {
+                            ArrayList<Value> values;
+                            outToClient.println("Trying to establish connection with the server. Please be patient...");
+                            try {
+                                for (Topic topic : input.keySet()) {
+                                    if (topic.getLineId().equals(inputLineId)) {
+                                        values = input.get(topic);
+                                        values.sort(Comparator.comparing(o -> o.getBus().getTime()));
+                                        for (Value bus_2_ : values)
+                                            outToClient.println("The bus with id " + bus_2_.getBus().getVehicleId() + " was last spotted at [" + bus_2_.getBus().getTime() + "] at \nLatitude: " + bus_2_.getLatitude() + "\nLongitude: " + bus_2_.getLongitude() + "\nRoute: " + bus_2_.getBus().getLineName() + "\n-----------------------------------------------------------\n");
+                                        if (values.size() == 0)
+                                            System.out.println("We couldn't find any buses on that line, please try other broker.");
+                                    }
                                 }
-                                System.out.println("Waiting for Publisher!");
-                                i++;
+                            } catch (NullPointerException e) {
+                                outToClient.println("No values for me");
                             }
+                            outToClient.println("next");
+                        } else if (!inputLineId.toLowerCase().equals("bye")) {
+                            outToClient.println("I don't have information for the specific line, try a different broker.");
+                            outToClient.println("next");
                         }
-
-                        try {
-                            for (Topic topic : input.keySet()) {
-                                if (topic.getLineId().equals(inputLineId)) {
-                                    values = input.get(topic);
-                                    values.sort(Comparator.comparing(o -> o.getBus().getTime()));
-                                    for (Value bus_2_ : values)
-                                        outToClient.println("The bus with id " + bus_2_.getBus().getVehicleId() + " was last spotted at [" + bus_2_.getBus().getTime() + "] at \nLatitude: " + bus_2_.getLatitude() + "\nLongitude: " + bus_2_.getLongitude() + "\nRoute: " + bus_2_.getBus().getLineName() + "\n-----------------------------------------------------------\n");
-                                    if (values.size() == 0)
-                                        System.out.println("We couldn't find any buses on that line, please try other broker.");
-                                }
-                            }
-                        } catch (NullPointerException e) {
-                            outToClient.println("No values for me");
-                        }
-                        outToClient.println("next");
-                    } else if (!inputLineId.toLowerCase().equals("bye")) {
-                        outToClient.println("I don't have information for the specific line, try a different broker.");
-                        outToClient.println("next");
+                    }
+                } else if(inFromServer.toString().equals("Publisher")){
+                    try {
+                        ObjectOutputStream out = new ObjectOutputStream(connected.getOutputStream());
+                        out.writeObject("BrokerA");
+                        input = new BroUtilities().pull(in);
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+            e.printStackTrace();
             }
         }
     }

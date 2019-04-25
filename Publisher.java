@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 class Publisher{
-    static private final int PORT = 10000;
-
     static ArrayList<Value> values = new ArrayList<>();
     private static HashMap<Topic, ArrayList<Value>> output = new HashMap<>();
     private static ArrayList<Topic> topics = new ArrayList<>();
@@ -24,49 +22,40 @@ class Publisher{
         BroUtilities.CreateBusLines(topics);
         PubUtilities.CreateNames();
         PubUtilities.CreateBuses();
-        ServerSocket providerSocket = new ServerSocket(PORT, 3);
         System.out.println("Waiting for clients to connect...");
-        try {
-            while (true) {
-                Socket connection = providerSocket.accept();
-                Thread t = new Thread(new push(connection));
-                t.start();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Not able to open the port", e);
-        }
-    }
 
-    private static class push implements Runnable {
-        private final Socket connection;
 
-        private push(Socket connection) {
-            this.connection = connection;
-        }
 
-        @Override
-        public void run() {
-            try {
+        boolean temp = true;
+        int i = 0;
+        while (temp) {
+            try (Socket clientSocket = new Socket("localhost", 4321)) {
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                out.writeObject("Publisher");
+                temp = false;
                 String broker;
                 Object inFromServer;
-                ObjectInputStream in = new ObjectInputStream(connection.getInputStream());
+                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
                 inFromServer = in.readObject();
                 if(inFromServer.toString().startsWith("Broker")) {
                     broker = inFromServer.toString().substring(6);
                     System.out.println("Got client " + broker + " !");
-
                     for (Topic topic: topics){
-                        ArrayList<Value> temp = new ArrayList<>();
-                        for (Value value : values) if (topic.getLineId().equals(value.getBus().getBuslineId())) temp.add(value);
-                        output.put(topic,temp);
+                        ArrayList<Value> temp2 = new ArrayList<>();
+                        for (Value value : values) if (topic.getLineId().equals(value.getBus().getBuslineId())) temp2.add(value);
+                        output.put(topic,temp2);
                     }
                 }
-                ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
+
                 out.writeObject(output);
-				out.writeObject("Stop");
-                connection.close();
+                out.writeObject("Stop");
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                if (i == 30) {
+                    System.out.println("Connection with server timed out, we couldn't find what you asked for.");
+                    break;
+                }
+                System.out.println("Waiting for Publisher!");
+                i++;
             }
         }
     }

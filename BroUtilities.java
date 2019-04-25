@@ -57,10 +57,9 @@ class BroUtilities {
         return hashed;
     }
 
-    HashMap<Topic, ArrayList<Value>> pull(Socket clientSocket) throws IOException, ClassNotFoundException{
+    HashMap<Topic, ArrayList<Value>> pull(ObjectInputStream in) throws IOException, ClassNotFoundException{
         HashMap<Topic, ArrayList<Value>> input = null;
         try {
-            ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
             while (true) {
                 try {
                     Object inFromServer;
@@ -74,7 +73,6 @@ class BroUtilities {
 
                 }
             }
-            clientSocket.close();
         }catch (BindException | ConnectException e){
             System.out.println("Couldn't connect to server");
         }
