@@ -18,14 +18,11 @@ class Publisher{
     private static HashMap<Topic, ArrayList<Value>> output = new HashMap<>();
     private static ArrayList<Topic> topics = new ArrayList<>();
 
-    public static void main(String[] args) throws IOException, ParseException, InterruptedException {
+    public static void main(String[] args) throws IOException, ParseException {
         BroUtilities.CreateBusLines(topics);
         PubUtilities.CreateNames();
         PubUtilities.CreateBuses();
         System.out.println("Waiting for clients to connect...");
-
-
-
         boolean temp = true;
         int i = 0;
         while (temp) {
@@ -46,7 +43,6 @@ class Publisher{
                         output.put(topic,temp2);
                     }
                 }
-
                 out.writeObject(output);
                 out.writeObject("Stop");
             } catch (IOException | ClassNotFoundException e) {
