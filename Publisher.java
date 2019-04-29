@@ -28,8 +28,6 @@ class Publisher{
         }
     }
 
-
-
     public static class PubThread implements Runnable {
         private int port;
 
