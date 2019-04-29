@@ -57,15 +57,18 @@ class BroUtilities {
         return hashed;
     }
 
-    HashMap<Topic, ArrayList<Value>> pull(ObjectInputStream in) throws IOException, ClassNotFoundException{
-        HashMap<Topic, ArrayList<Value>> input = null;
+    static HashMap<Topic,HashMap<String,Value>> pull(ObjectInputStream in) throws IOException, ClassNotFoundException{
+        HashMap<String,Value> input;
+        HashMap<Topic,HashMap<String,Value>> output = new HashMap<>();
         try {
             while (true) {
                 try {
                     Object inFromServer;
                     inFromServer = in.readObject();
                     if(!inFromServer.equals("Stop")){
-                        input = (HashMap<Topic, ArrayList<Value>>) inFromServer;
+                        Topic topic = (Topic) inFromServer;
+                        input = (HashMap<String,Value>) in.readObject();
+                        output.put(topic,input);
                     }else{
                         break;
                     }
@@ -76,7 +79,7 @@ class BroUtilities {
         }catch (BindException | ConnectException e){
             System.out.println("Couldn't connect to server");
         }
-        return input;
+        return output;
     }
 
     private static int ipToLong(String ipAddress) {

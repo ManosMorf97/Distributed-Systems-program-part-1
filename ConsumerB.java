@@ -6,10 +6,7 @@
 
  */
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.Scanner;
@@ -34,6 +31,8 @@ public class ConsumerB {
             if (broker.toUpperCase().equals("C")) port = 7654;
 
             try (Socket clientSocket = new Socket("localhost", port)) {
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                out.writeObject("Consumer");
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
                 String line = inFromServer.readLine();
